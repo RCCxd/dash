@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* fallback (tema é aplicado via SettingsProvider) */
+    color-scheme: dark;
+    --bg: #071629;
+    --surface: #0b1f35;
+    --surface2: #0f2a46;
+    --border: #1a3a5d;
+    --text: #eaf3ff;
+    --muted: #a8c0dc;
+    --muted2: #7fa1c4;
+    --primary: #0b5ed7;
+    --on-primary: #ffffff;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    @apply antialiased;
+  }
+}
+
+@layer utilities {
+  .bg-app {
+    background-color: var(--bg);
+  }
+
+  .bg-surface {
+    background-color: var(--surface);
+  }
+
+  .bg-surface2 {
+    background-color: var(--surface2);
+  }
+
+  .border-app {
+    border-color: var(--border);
+  }
+
+  .text-app {
+    color: var(--text);
+  }
+
+  .text-muted {
+    color: var(--muted);
+  }
+
+  .text-subtle {
+    color: var(--muted2);
+  }
+
+  .btn-primary {
+    background-color: var(--primary);
+    color: var(--on-primary);
+  }
+
+  .btn-primary:hover {
+    filter: brightness(1.05);
+  }
+
+  .btn-outline {
+    background-color: var(--surface);
+    border-color: var(--border);
+    color: var(--text);
+  }
+
+  .btn-outline:hover {
+    background-color: var(--surface2);
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
