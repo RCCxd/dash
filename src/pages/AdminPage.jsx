@@ -36,6 +36,8 @@ export default function AdminPage() {
     signInAdmin,
     signOutAdmin,
     adminConfigured,
+    storageConfigured,
+    storeKind,
   } = useGlobalData()
   const envelope = useMemo(() => normalizeEnvelope(globalTasks), [globalTasks])
   const tasksSorted = useMemo(() => sortGlobalTasks(envelope.tasks), [envelope.tasks])
@@ -74,6 +76,7 @@ export default function AdminPage() {
   async function onAdd(e) {
     e.preventDefault()
     if (!isAdmin) return
+    if (!storageConfigured) return
     const title = form.title.trim()
     if (!title) return
     const now = Date.now()
@@ -94,6 +97,7 @@ export default function AdminPage() {
 
   async function onDelete(id) {
     if (!isAdmin) return
+    if (!storageConfigured) return
     const next = { ...envelope, tasks: envelope.tasks.filter((t) => t?.id !== id) }
     await saveEnvelope(next, { autoExport: true })
   }
@@ -121,8 +125,8 @@ export default function AdminPage() {
         <div className="text-sm font-semibold text-app">Senha do admin</div>
         <p className="mt-1 text-xs text-muted">
           {adminConfigured
-            ? 'Digite a senha para liberar as edições globais.'
-            : 'Primeiro uso: digite uma senha para configurar o admin.'}
+            ? 'Digite a senha (ADMIN_PASSWORD) para liberar as edições globais.'
+            : 'Configure a variável ADMIN_PASSWORD no Vercel para habilitar o admin.'}
         </p>
         <div className="mt-3 flex items-center gap-2">
           <input
@@ -157,6 +161,15 @@ export default function AdminPage() {
           )}
         </div>
         {adminAuthError ? <div className="mt-2 text-xs text-red-200">{adminAuthError}</div> : null}
+        <div className="mt-2 text-xs text-muted">
+          Storage global: {storageConfigured ? storeKind : 'não configurado'}.
+        </div>
+        {!storageConfigured ? (
+          <div className="mt-1 text-xs text-muted">
+            Para salvar tarefas/rotina globais no Vercel, conecte um Redis (Upstash) e defina
+            `UPSTASH_REDIS_REST_URL` e `UPSTASH_REDIS_REST_TOKEN`.
+          </div>
+        ) : null}
       </div>
 
       <div className="mt-4 rounded-2xl border border-app bg-surface p-4">
@@ -228,10 +241,10 @@ export default function AdminPage() {
 
           <button
             type="submit"
-            disabled={!isAdmin || busy}
+            disabled={!isAdmin || busy || !storageConfigured}
             className={[
               'inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium',
-              !isAdmin || busy
+              !isAdmin || busy || !storageConfigured
                 ? 'cursor-not-allowed bg-surface2 text-muted'
                 : 'btn-primary',
             ].join(' ')}
@@ -271,11 +284,13 @@ export default function AdminPage() {
               </div>
               <button
                 type="button"
-                disabled={!isAdmin || busy}
+                disabled={!isAdmin || busy || !storageConfigured}
                 onClick={() => onDelete(t.id)}
                 className={[
                   'inline-flex h-9 w-9 items-center justify-center rounded-xl border border-app bg-surface text-app',
-                  !isAdmin || busy ? 'cursor-not-allowed opacity-60' : 'hover:bg-surface2',
+                  !isAdmin || busy || !storageConfigured
+                    ? 'cursor-not-allowed opacity-60'
+                    : 'hover:bg-surface2',
                 ].join(' ')}
                 aria-label="Excluir"
               >

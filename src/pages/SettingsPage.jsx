@@ -92,8 +92,16 @@ function HexPicker({ label, value, onChange }) {
 
 export default function SettingsPage() {
   const { settings, updateSettings, resetSettings } = useSettings()
-  const { signInAdmin, signOutAdmin, isAdmin, adminBusy, adminAuthError, adminConfigured } =
-    useGlobalData()
+  const {
+    signInAdmin,
+    signOutAdmin,
+    isAdmin,
+    adminBusy,
+    adminAuthError,
+    adminConfigured,
+    storageConfigured,
+    storeKind,
+  } = useGlobalData()
   const [adminDraft, setAdminDraft] = useState('')
 
   return (
@@ -302,8 +310,8 @@ export default function SettingsPage() {
             <div className="text-sm font-semibold text-app">Senha do admin</div>
             <p className="mt-1 text-xs text-muted">
               {adminConfigured
-                ? 'Digite a senha. O item “Admin” aparece no menu para adicionar tarefas e exportar JSON automaticamente.'
-                : 'Primeiro uso: digite uma senha para configurar o admin e liberar o menu “Admin”.'}
+                ? 'Digite a senha (ADMIN_PASSWORD) para liberar o menu “Admin”.'
+                : 'Configure a variável ADMIN_PASSWORD no Vercel para habilitar o admin.'}
             </p>
             <div className="mt-3 flex items-center gap-2">
               <input
@@ -339,6 +347,15 @@ export default function SettingsPage() {
             </div>
             {adminAuthError ? (
               <div className="mt-2 text-xs text-red-200">{adminAuthError}</div>
+            ) : null}
+            <div className="mt-2 text-xs text-muted">
+              Storage global: {storageConfigured ? storeKind : 'não configurado'}.
+            </div>
+            {!storageConfigured ? (
+              <div className="mt-1 text-xs text-muted">
+                Para salvar tarefas/rotina globais no Vercel, conecte um Redis (Upstash) e defina
+                `UPSTASH_REDIS_REST_URL` e `UPSTASH_REDIS_REST_TOKEN`.
+              </div>
             ) : null}
           </div>
 

@@ -35,17 +35,6 @@ async function apiAdminAuth({ adminPassword }) {
   return data
 }
 
-async function apiAdminSetup({ password }) {
-  const resp = await fetch('/api/global-data', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ action: 'setup', password }),
-  })
-  const data = await resp.json()
-  if (!resp.ok || !data.ok) throw new Error(data.error || 'Falha ao configurar admin.')
-  return data
-}
-
 async function apiPutPartial({ adminPassword, patch }) {
   const resp = await fetch('/api/global-data', {
     method: 'PUT',
@@ -70,6 +59,8 @@ export function GlobalDataProvider({ children }) {
   const [adminBusy, setAdminBusy] = useState(false)
   const [adminAuthError, setAdminAuthError] = useState('')
   const [adminConfigured, setAdminConfigured] = useState(false)
+  const [storageConfigured, setStorageConfigured] = useState(false)
+  const [storeKind, setStoreKind] = useState('unknown')
 
   const reload = useCallback(async () => {
     setLoading(true)
@@ -79,12 +70,14 @@ export function GlobalDataProvider({ children }) {
       setRoutine(data.routine)
       setTasks(data.tasks)
       setAdminConfigured(Boolean(data.adminConfigured))
+      setStorageConfigured(Boolean(data.storageConfigured))
+      setStoreKind(String(data.store || 'unknown'))
     } catch (e) {
       const fallback = localDefaults()
       setRoutine(fallback.routine)
       setTasks(fallback.tasks)
       setError(
-        `${e?.message || String(e)} (usando defaults locais — para dados globais e IA, rode via Netlify Functions)`,
+        `${e?.message || String(e)} (usando defaults locais — para dados globais e IA, rode via Vercel Functions: vercel dev)`,
       )
     } finally {
       setLoading(false)
@@ -135,6 +128,8 @@ export function GlobalDataProvider({ children }) {
       tasks,
       adminPassword,
       adminConfigured,
+      storageConfigured,
+      storeKind,
       adminBusy,
       adminAuthError,
       isAdmin: Boolean(adminVerified),
@@ -149,15 +144,6 @@ export function GlobalDataProvider({ children }) {
           setAdminVerified(true)
           return true
         } catch (e) {
-          const code = e?.code
-          if (code === 'ADMIN_NOT_CONFIGURED' || e?.status === 428) {
-            await apiAdminSetup({ password: p })
-            await apiAdminAuth({ adminPassword: p })
-            setAdminPassword(p)
-            setAdminVerified(true)
-            setAdminConfigured(true)
-            return true
-          }
           setAdminVerified(false)
           setAdminPassword('')
           setAdminAuthError(e?.message || String(e))
@@ -185,7 +171,20 @@ export function GlobalDataProvider({ children }) {
         return data.tasks
       },
     }
-  }, [adminConfigured, adminBusy, adminPassword, adminAuthError, adminVerified, error, loading, reload, routine, tasks])
+  }, [
+    adminConfigured,
+    adminBusy,
+    adminPassword,
+    adminAuthError,
+    adminVerified,
+    error,
+    loading,
+    reload,
+    routine,
+    tasks,
+    storageConfigured,
+    storeKind,
+  ])
 
   return <GlobalDataContext.Provider value={api}>{children}</GlobalDataContext.Provider>
 }

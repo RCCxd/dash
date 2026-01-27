@@ -1,4 +1,3 @@
-const crypto = require('crypto')
 const fs = require('fs/promises')
 const path = require('path')
 
@@ -8,10 +7,6 @@ function json(res, body, statusCode = 200, extraHeaders = {}) {
   res.setHeader('cache-control', 'no-store')
   for (const [k, v] of Object.entries(extraHeaders)) res.setHeader(k, v)
   res.end(JSON.stringify(body))
-}
-
-function sha256(text) {
-  return crypto.createHash('sha256').update(String(text || ''), 'utf8').digest('hex')
 }
 
 function adminPasswordFromHeaders(headers) {
@@ -98,11 +93,8 @@ function createUpstashStore() {
       return v == null ? null : v
     },
     async set(key, value) {
-      if (value && typeof value === 'object') {
-        await redis.set(key, JSON.stringify(value))
-      } else {
-        await redis.set(key, value)
-      }
+      if (value && typeof value === 'object') await redis.set(key, JSON.stringify(value))
+      else await redis.set(key, value)
     },
     kind: 'upstash',
   }
@@ -123,56 +115,14 @@ async function getStore() {
 
 const KEY_ROUTINE = 'global.routine.v1'
 const KEY_TASKS = 'global.tasks.v1'
-const KEY_ADMIN_HASH = 'admin.passwordHash.v1'
 
-async function getStoredAdminHash(store) {
-  const v = await store.get(KEY_ADMIN_HASH)
-  return typeof v === 'string' && v.length >= 16 ? v : null
-}
-
-async function requireAdmin(req, store) {
-  const requiredEnv = envAdminPassword()
-  const got = adminPasswordFromHeaders(req.headers)
-
-  if (requiredEnv) {
-    if (!got || got !== requiredEnv) return { ok: false, error: 'Senha de admin inválida.' }
-    return { ok: true, source: 'env' }
+function requireAdmin(req) {
+  const required = envAdminPassword()
+  if (!required) {
+    return { ok: false, code: 'ADMIN_ENV_NOT_CONFIGURED', error: 'ADMIN_PASSWORD não configurado.' }
   }
-
-  const storedHash = await getStoredAdminHash(store)
-  if (!storedHash) return { ok: false, code: 'ADMIN_NOT_CONFIGURED', error: 'Admin não configurado.' }
-
-  if (!got) return { ok: false, error: 'Senha de admin inválida.' }
-  const gotHash = sha256(`v1:${got}`)
-  if (gotHash !== storedHash) return { ok: false, error: 'Senha de admin inválida.' }
-  return { ok: true, source: 'store' }
-}
-
-async function setupAdminPassword({ store, password }) {
-  const requiredEnv = envAdminPassword()
-  if (requiredEnv) return { ok: false, error: 'Admin está configurado via ambiente.' }
-
-  const existing = await getStoredAdminHash(store)
-  if (existing) return { ok: false, error: 'Admin já está configurado.' }
-
-  const p = String(password || '').trim()
-  if (p.length < 4) return { ok: false, error: 'Senha muito curta (mínimo 4 caracteres).' }
-
-  await store.set(KEY_ADMIN_HASH, sha256(`v1:${p}`))
-  return { ok: true }
-}
-
-async function changeAdminPassword({ req, store, newPassword }) {
-  const requiredEnv = envAdminPassword()
-  if (requiredEnv) return { ok: false, error: 'Admin está configurado via ambiente.' }
-
-  const admin = await requireAdmin(req, store)
-  if (!admin.ok) return admin
-
-  const p = String(newPassword || '').trim()
-  if (p.length < 4) return { ok: false, error: 'Senha muito curta (mínimo 4 caracteres).' }
-
-  await store.set(KEY_ADMIN_HASH, sha256(`v1:${p}`))
+  const got = adminPasswordFromHeaders(req.headers)
+  if (!got || got !== required) return { ok: false, error: 'Senha de admin inválida.' }
   return { ok: true }
 }
 
@@ -190,63 +140,46 @@ function readBody(req) {
 
 module.exports = async (req, res) => {
   try {
-    const store = await getStore()
-    if (!store) {
-      return json(
-        res,
-        {
-          ok: false,
-          error:
-            'Storage global não configurado. Em produção no Vercel, conecte um Vercel KV (ou defina um storage) para salvar tarefas/rotina globais.',
-        },
-        500,
-      )
-    }
-
     const method = req.method || 'GET'
-    const configured = Boolean(envAdminPassword() || (await getStoredAdminHash(store)))
+    const store = await getStore()
+    const adminConfigured = Boolean(envAdminPassword())
+    const storageConfigured = Boolean(store)
 
     if (method === 'GET') {
-      const routine = (await store.get(KEY_ROUTINE)) || defaultRoutine()
-      const tasks = (await store.get(KEY_TASKS)) || defaultTasks()
-      return json(res, { ok: true, routine, tasks, adminConfigured: configured, store: store.kind })
+      const routine = (store && (await store.get(KEY_ROUTINE))) || defaultRoutine()
+      const tasks = (store && (await store.get(KEY_TASKS))) || defaultTasks()
+      return json(res, {
+        ok: true,
+        routine,
+        tasks,
+        adminConfigured,
+        storageConfigured,
+        store: store?.kind || 'none',
+      })
     }
 
     if (method === 'POST') {
-      const body = readBody(req)
-      const action = String(body?.action || '').toLowerCase()
-
-      if (action === 'setup') {
-        const setup = await setupAdminPassword({ store, password: body?.password })
-        if (!setup.ok) return json(res, { ok: false, error: setup.error }, 400)
-        return json(res, { ok: true, adminConfigured: true })
-      }
-
-      if (action === 'change') {
-        const changed = await changeAdminPassword({ req, store, newPassword: body?.newPassword })
-        if (!changed.ok)
-          return json(res, { ok: false, error: changed.error, code: changed.code }, 401)
-        return json(res, { ok: true, adminConfigured: true })
-      }
-
-      const admin = await requireAdmin(req, store)
-      if (!admin.ok)
-        return json(
-          res,
-          { ok: false, error: admin.error, code: admin.code },
-          admin.code ? 428 : 401,
-        )
-      return json(res, { ok: true, admin: true, source: admin.source })
+      const admin = requireAdmin(req)
+      if (!admin.ok) return json(res, { ok: false, error: admin.error, code: admin.code }, 401)
+      return json(res, { ok: true, admin: true })
     }
 
     if (method === 'PUT') {
-      const admin = await requireAdmin(req, store)
-      if (!admin.ok)
+      const admin = requireAdmin(req)
+      if (!admin.ok) return json(res, { ok: false, error: admin.error, code: admin.code }, 401)
+
+      if (!store) {
         return json(
           res,
-          { ok: false, error: admin.error, code: admin.code },
-          admin.code ? 428 : 401,
+          {
+            ok: false,
+            code: 'STORAGE_NOT_CONFIGURED',
+            error:
+              'Storage global não configurado. Conecte um Redis (Upstash) no Vercel e defina UPSTASH_REDIS_REST_URL/UPSTASH_REDIS_REST_TOKEN.',
+          },
+          500,
         )
+      }
 
       const body = readBody(req)
       const { routine, tasks } = body || {}
@@ -256,7 +189,14 @@ module.exports = async (req, res) => {
 
       const nextRoutine = (await store.get(KEY_ROUTINE)) || defaultRoutine()
       const nextTasks = (await store.get(KEY_TASKS)) || defaultTasks()
-      return json(res, { ok: true, routine: nextRoutine, tasks: nextTasks, adminConfigured: true })
+      return json(res, {
+        ok: true,
+        routine: nextRoutine,
+        tasks: nextTasks,
+        adminConfigured,
+        storageConfigured: true,
+        store: store.kind,
+      })
     }
 
     return json(res, { ok: false, error: 'Método não suportado.' }, 405)
