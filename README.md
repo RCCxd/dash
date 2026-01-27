@@ -42,6 +42,8 @@ npm run preview
 - **Output directory**: `dist`
 - SPA routing e `/api/*` configurados em `vercel.json`.
 
+Se o build falhar com exit `126`, faça redeploy com **Clear build cache** (ou deixe o `prebuild` corrigir permissões de executáveis em `node_modules`).
+
 ### Variáveis de ambiente (Vercel)
 
 - `OPENAI_API_KEY` (opcional): habilita a IA no endpoint `/api/routine-ai`.
@@ -69,4 +71,3 @@ Essa chave fica no `localStorage` e é enviada no header `x-openai-key` para `/a
 - Usuário (rotina): `studentDashboard.userRoutine.v1`
 - Configurações: `studentDashboard.settings.v1`
 - Senha admin (neste dispositivo): `studentDashboard.adminPassword.v1`
-
