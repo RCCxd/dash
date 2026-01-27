@@ -16,7 +16,7 @@ Aplicação Web (SPA) para substituir planilhas: **tarefas** e **rotina semanal*
 - **Dashboard & Tarefas**: tarefas globais (criadas pelo admin) + filtros + cada usuário marca como concluída no próprio dispositivo.
 - **Rotina**: grade semanal + chat com IA que gera um plano estruturado e, ao salvar, preenche sua grade (seus itens são editáveis).
 - **Configurações**: tema (Marista/Claro/Escuro/Personalizado com HEX), fonte, contraste e outras opções.
-- **Admin (no site)**: login por senha em **Configurações** para adicionar tarefas globais e exportar JSON automaticamente.
+- **Admin (no site)**: desbloqueio local por senha (qualquer senha) em **Configurações** para adicionar tarefas globais e exportar JSON automaticamente.
 
 ## Rodar localmente
 
@@ -48,17 +48,15 @@ Se o build falhar com exit `126`, faça redeploy com **Clear build cache** (ou d
 
 - `OPENAI_API_KEY` (opcional): habilita a IA no endpoint `/api/routine-ai`.
 - `OPENAI_MODEL` (opcional): default `gpt-4o-mini`.
-- `ADMIN_PASSWORD` (recomendado): senha do admin para salvar dados globais no endpoint `/api/global-data`.
-  - Compatibilidade: `ADMIN_TOKEN` ainda é aceito como fallback.
 
 ### Storage global (recomendado)
 
-Conecte um Redis do marketplace (Upstash). O backend usa estas env vars:
+Conecte um Redis do marketplace (Upstash) para persistir tarefas/rotina globais (para todos). O backend usa estas env vars:
 
 - `UPSTASH_REDIS_REST_URL`
 - `UPSTASH_REDIS_REST_TOKEN`
 
-Sem isso, o deploy não consegue persistir tarefas/rotina globais.
+Sem isso, o backend usa um fallback simples em arquivo (no Vercel é em `/tmp`), que pode resetar em cold starts.
 
 ### OpenAI key sem env (modo local por dispositivo)
 

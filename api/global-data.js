@@ -1,27 +1,11 @@
 const fs = require('fs/promises')
 const path = require('path')
 
-function json(res, body, statusCode = 200, extraHeaders = {}) {
+function json(res, body, statusCode = 200) {
   res.statusCode = statusCode
   res.setHeader('content-type', 'application/json; charset=utf-8')
   res.setHeader('cache-control', 'no-store')
-  for (const [k, v] of Object.entries(extraHeaders)) res.setHeader(k, v)
   res.end(JSON.stringify(body))
-}
-
-function adminPasswordFromHeaders(headers) {
-  const h = headers || {}
-  return (
-    h['x-admin-password'] ||
-    h['x-admin-token'] ||
-    h['X-Admin-Password'] ||
-    h['X-Admin-Token'] ||
-    ''
-  )
-}
-
-function envAdminPassword() {
-  return process.env.ADMIN_PASSWORD || process.env.ADMIN_TOKEN || ''
 }
 
 function defaultRoutine() {
@@ -39,6 +23,7 @@ function safeFilename(key) {
 function fileStoreBaseDir() {
   const custom = process.env.LOCAL_GLOBAL_DATA_DIR
   if (custom) return custom
+  if (process.env.VERCEL) return path.join('/tmp', 'student-dashboard')
   return path.join(process.cwd(), '.local-data')
 }
 
@@ -60,7 +45,7 @@ async function setFileJson(key, value) {
   await fs.writeFile(file, JSON.stringify(value ?? null, null, 2), 'utf8')
 }
 
-function createFileStore() {
+function createFileStore(kind) {
   return {
     async get(key) {
       return getFileJson(key)
@@ -68,7 +53,7 @@ function createFileStore() {
     async set(key, value) {
       await setFileJson(key, value)
     },
-    kind: 'file',
+    kind,
   }
 }
 
@@ -100,31 +85,14 @@ function createUpstashStore() {
   }
 }
 
-function isVercelProd() {
-  if (!process.env.VERCEL) return false
-  const env = String(process.env.VERCEL_ENV || '').toLowerCase()
-  return env && env !== 'development'
-}
-
 async function getStore() {
   const upstash = createUpstashStore()
   if (upstash) return upstash
-  if (isVercelProd()) return null
-  return createFileStore()
+  return createFileStore(process.env.VERCEL ? 'file-tmp' : 'file-local')
 }
 
 const KEY_ROUTINE = 'global.routine.v1'
 const KEY_TASKS = 'global.tasks.v1'
-
-function requireAdmin(req) {
-  const required = envAdminPassword()
-  if (!required) {
-    return { ok: false, code: 'ADMIN_ENV_NOT_CONFIGURED', error: 'ADMIN_PASSWORD não configurado.' }
-  }
-  const got = adminPasswordFromHeaders(req.headers)
-  if (!got || got !== required) return { ok: false, error: 'Senha de admin inválida.' }
-  return { ok: true }
-}
 
 function readBody(req) {
   if (req.body && typeof req.body === 'object') return req.body
@@ -142,45 +110,20 @@ module.exports = async (req, res) => {
   try {
     const method = req.method || 'GET'
     const store = await getStore()
-    const adminConfigured = Boolean(envAdminPassword())
-    const storageConfigured = Boolean(store)
 
     if (method === 'GET') {
-      const routine = (store && (await store.get(KEY_ROUTINE))) || defaultRoutine()
-      const tasks = (store && (await store.get(KEY_TASKS))) || defaultTasks()
+      const routine = (await store.get(KEY_ROUTINE)) || defaultRoutine()
+      const tasks = (await store.get(KEY_TASKS)) || defaultTasks()
       return json(res, {
         ok: true,
         routine,
         tasks,
-        adminConfigured,
-        storageConfigured,
-        store: store?.kind || 'none',
+        storageConfigured: true,
+        store: store.kind,
       })
     }
 
-    if (method === 'POST') {
-      const admin = requireAdmin(req)
-      if (!admin.ok) return json(res, { ok: false, error: admin.error, code: admin.code }, 401)
-      return json(res, { ok: true, admin: true })
-    }
-
     if (method === 'PUT') {
-      const admin = requireAdmin(req)
-      if (!admin.ok) return json(res, { ok: false, error: admin.error, code: admin.code }, 401)
-
-      if (!store) {
-        return json(
-          res,
-          {
-            ok: false,
-            code: 'STORAGE_NOT_CONFIGURED',
-            error:
-              'Storage global não configurado. Conecte um Redis (Upstash) no Vercel e defina UPSTASH_REDIS_REST_URL/UPSTASH_REDIS_REST_TOKEN.',
-          },
-          500,
-        )
-      }
-
       const body = readBody(req)
       const { routine, tasks } = body || {}
 
@@ -193,12 +136,12 @@ module.exports = async (req, res) => {
         ok: true,
         routine: nextRoutine,
         tasks: nextTasks,
-        adminConfigured,
         storageConfigured: true,
         store: store.kind,
       })
     }
 
+    // no auth endpoint needed anymore
     return json(res, { ok: false, error: 'Método não suportado.' }, 405)
   } catch (err) {
     return json(res, { ok: false, error: err?.message || String(err) }, 500)

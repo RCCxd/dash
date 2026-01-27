@@ -31,18 +31,14 @@ export default function AdminPage() {
     tasks: globalTasks,
     updateGlobalTasks,
     isAdmin,
-    adminBusy,
-    adminAuthError,
-    signInAdmin,
-    signOutAdmin,
-    adminConfigured,
     storageConfigured,
     storeKind,
+    adminPassword,
+    setAdminPassword,
   } = useGlobalData()
   const envelope = useMemo(() => normalizeEnvelope(globalTasks), [globalTasks])
   const tasksSorted = useMemo(() => sortGlobalTasks(envelope.tasks), [envelope.tasks])
 
-  const [adminDraft, setAdminDraft] = useState('')
   const [form, setForm] = useState({
     subject: '',
     title: '',
@@ -124,50 +120,32 @@ export default function AdminPage() {
       <div className="mt-4 rounded-2xl border border-app bg-surface p-4">
         <div className="text-sm font-semibold text-app">Senha do admin</div>
         <p className="mt-1 text-xs text-muted">
-          {adminConfigured
-            ? 'Digite a senha (ADMIN_PASSWORD) para liberar as edições globais.'
-            : 'Configure a variável ADMIN_PASSWORD no Vercel para habilitar o admin.'}
+          Digite qualquer senha para desbloquear o admin neste dispositivo.
         </p>
         <div className="mt-3 flex items-center gap-2">
           <input
             type="password"
-            value={adminDraft}
-            onChange={(e) => setAdminDraft(e.target.value)}
-            placeholder="ADMIN_PASSWORD"
+            value={adminPassword || ''}
+            onChange={(e) => setAdminPassword(e.target.value)}
+            placeholder="Qualquer senha"
             className="h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
           />
           {isAdmin ? (
             <button
               type="button"
-              onClick={signOutAdmin}
+              onClick={() => setAdminPassword('')}
               className="h-10 shrink-0 rounded-xl border border-app bg-surface px-3 text-sm font-medium text-app hover:bg-surface2"
             >
               Sair
             </button>
-          ) : (
-            <button
-              type="button"
-              disabled={adminBusy || !adminDraft.trim()}
-              onClick={() => signInAdmin(adminDraft)}
-              className={[
-                'h-10 shrink-0 rounded-xl px-3 text-sm font-medium',
-                adminBusy || !adminDraft.trim()
-                  ? 'cursor-not-allowed bg-surface2 text-muted'
-                  : 'btn-primary',
-              ].join(' ')}
-            >
-              Entrar
-            </button>
-          )}
+          ) : null}
         </div>
-        {adminAuthError ? <div className="mt-2 text-xs text-red-200">{adminAuthError}</div> : null}
         <div className="mt-2 text-xs text-muted">
           Storage global: {storageConfigured ? storeKind : 'não configurado'}.
         </div>
         {!storageConfigured ? (
           <div className="mt-1 text-xs text-muted">
-            Para salvar tarefas/rotina globais no Vercel, conecte um Redis (Upstash) e defina
-            `UPSTASH_REDIS_REST_URL` e `UPSTASH_REDIS_REST_TOKEN`.
+            Para “salvar para todos”, conecte um Redis (Upstash). Sem isso pode resetar.
           </div>
         ) : null}
       </div>
