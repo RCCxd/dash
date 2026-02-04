@@ -10,34 +10,26 @@ function localDefaults() {
   }
 }
 
-async function apiGet({ adminPassword } = {}) {
-  const resp = await fetch('/api/global-data', {
-    method: 'GET',
-    headers: {
-      ...(adminPassword && String(adminPassword).trim()
-        ? { 'x-admin-password': String(adminPassword).trim() }
-        : null),
-    },
-  })
-  const data = await resp.json()
-  if (!resp.ok || !data.ok) throw new Error(data.error || 'Falha ao carregar dados globais.')
-  return data
+function normalizeEnvelope(envelope) {
+  if (!envelope || typeof envelope !== 'object') return { tasks: [] }
+  const tasks = Array.isArray(envelope.tasks) ? envelope.tasks : []
+  return { ...envelope, tasks }
 }
 
-async function apiPutPartial({ patch, adminPassword }) {
-  const resp = await fetch('/api/global-data', {
-    method: 'PUT',
-    headers: {
-      'content-type': 'application/json',
-      ...(adminPassword && String(adminPassword).trim()
-        ? { 'x-admin-password': String(adminPassword).trim() }
-        : null),
-    },
-    body: JSON.stringify(patch),
-  })
+function globalTasksUrl() {
+  const base = String(import.meta?.env?.BASE_URL || '/')
+  const normalized = base.endsWith('/') ? base : `${base}/`
+  return `${normalized}tarefas-globais.json`
+}
+
+async function loadGlobalTasksFromJson() {
+  const url = globalTasksUrl()
+  const resp = await fetch(url, { cache: 'no-store' })
+  if (!resp.ok) {
+    throw new Error(`Falha ao carregar tarefas globais em ${url} (HTTP ${resp.status}).`)
+  }
   const data = await resp.json()
-  if (!resp.ok || !data.ok) throw new Error(data.error || 'Falha ao salvar dados globais.')
-  return data
+  return normalizeEnvelope(data)
 }
 
 export function GlobalDataProvider({ children }) {
@@ -48,30 +40,32 @@ export function GlobalDataProvider({ children }) {
   const [authRequired, setAuthRequired] = useState(false)
   const [adminOk, setAdminOk] = useState(false)
   const [storageConfigured, setStorageConfigured] = useState(true)
-  const [storeKind, setStoreKind] = useState('unknown')
+  const [storeKind, setStoreKind] = useState('tarefas-globais.json')
 
   const reload = useCallback(async () => {
     setLoading(true)
     setError('')
     try {
-      const data = await apiGet({ adminPassword })
-      setTasks(data.tasks)
-      setStorageConfigured(Boolean(data.storageConfigured ?? true))
-      setStoreKind(String(data.store || 'unknown'))
-      setAuthRequired(Boolean(data.authRequired))
-      setAdminOk(Boolean(data.adminOk))
+      const loaded = await loadGlobalTasksFromJson()
+      setTasks(loaded)
+      setStorageConfigured(true)
+      setStoreKind('tarefas-globais.json')
+      setAuthRequired(false)
+      setAdminOk(true)
     } catch (e) {
       const fallback = localDefaults()
       setTasks(fallback.tasks)
+      setStorageConfigured(true)
+      setStoreKind('tarefas-globais.json')
       setAuthRequired(false)
       setAdminOk(false)
       setError(
-        `${e?.message || String(e)} (usando defaults locais — para dados globais, rode via Vercel Functions: vercel dev)`,
+        `${e?.message || String(e)} (usando defaults locais — confira se existe public/tarefas-globais.json)`,
       )
     } finally {
       setLoading(false)
     }
-  }, [adminPassword])
+  }, [])
 
   useEffect(() => {
     reload()
@@ -95,24 +89,15 @@ export function GlobalDataProvider({ children }) {
       isAdmin: authRequired ? Boolean(adminOk) : Boolean(adminPassword && String(adminPassword).trim()),
       reload,
       async updateGlobalTasks(nextTasks) {
-        const data = await apiPutPartial({ patch: { tasks: nextTasks }, adminPassword })
-        setTasks(data.tasks)
-        setAuthRequired(Boolean(data.authRequired))
-        setAdminOk(Boolean(data.adminOk))
-        return data.tasks
+        const normalized = normalizeEnvelope(nextTasks)
+        setTasks(normalized)
+        setAuthRequired(false)
+        setAdminOk(true)
+        return normalized
       },
     }
-  }, [
-    adminPassword,
-    adminOk,
-    authRequired,
-    error,
-    loading,
-    reload,
-    tasks,
-    storageConfigured,
-    storeKind,
-  ])
+  }, [adminPassword, adminOk, authRequired, error, loading, reload, tasks, storageConfigured, storeKind])
 
   return <GlobalDataContext.Provider value={api}>{children}</GlobalDataContext.Provider>
 }
+

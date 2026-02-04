@@ -96,8 +96,6 @@ export default function SettingsPage() {
     isAdmin,
     adminPassword,
     setAdminPassword,
-    authRequired,
-    adminOk,
     storageConfigured,
     storeKind,
   } = useGlobalData()
@@ -233,25 +231,19 @@ export default function SettingsPage() {
         <Section
           icon={Shield}
           title="Administração"
-          description={
-            authRequired
-              ? 'Somente admin (senha do backend) consegue alterar tarefas globais.'
-              : 'Somente admin (neste dispositivo) pode alterar tarefas globais.'
-          }
+          description="Edite e exporte as tarefas globais. Para aplicar para todos, atualize public/tarefas-globais.json (commit + deploy)."
         >
           <div className="rounded-2xl border border-app bg-surface p-4">
             <div className="text-sm font-semibold text-app">Senha do admin</div>
             <p className="mt-1 text-xs text-muted">
-              {authRequired
-                ? 'Digite a senha configurada em ADMIN_PASSWORD no backend (somente ela libera o Admin).'
-                : 'Digite qualquer senha para desbloquear o menu "Admin" neste dispositivo.'}
+              Digite qualquer senha para desbloquear o menu &quot;Admin&quot; neste dispositivo.
             </p>
             <div className="mt-3 flex items-center gap-2">
               <input
                 type="password"
                 value={adminPassword || ''}
                 onChange={(e) => setAdminPassword(e.target.value)}
-                placeholder={authRequired ? 'Senha do admin' : 'Qualquer senha'}
+                placeholder="Qualquer senha"
                 className="h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
               />
               {isAdmin ? (
@@ -264,24 +256,16 @@ export default function SettingsPage() {
                 </button>
               ) : null}
             </div>
-            {authRequired && adminPassword && !adminOk ? (
-              <div className="mt-2 text-xs text-red-200">Senha incorreta para este backend.</div>
-            ) : null}
             <div className="mt-2 text-xs text-muted">
-              Storage global: {storageConfigured ? storeKind : 'não configurado'}.
+              Base global: {storageConfigured ? storeKind : 'não configurado'}.
             </div>
-            {!storageConfigured ? (
-              <div className="mt-1 text-xs text-muted">
-                Para “salvar para todos”, conecte um Redis (Upstash). Sem isso pode resetar.
-              </div>
-            ) : null}
           </div>
 
           <div className="mt-4 rounded-2xl border border-app bg-surface p-4">
             <div className="text-sm font-semibold text-app">Painel do admin</div>
             <p className="mt-1 text-xs text-muted">
-              No painel você adiciona/edita/importa tarefas globais. Se quiser, ative o auto-download do
-              `tarefas-globais.json` ao salvar.
+              No painel você adiciona/edita/importa tarefas globais e exporta o JSON. Depois substitua
+              `public/tarefas-globais.json` no repo e dê commit.
             </p>
             <div className="mt-3 flex items-center justify-end">
               <Link

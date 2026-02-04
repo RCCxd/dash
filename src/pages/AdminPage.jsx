@@ -112,7 +112,7 @@ export default function AdminPage() {
     setBusy(true)
     try {
       const saved = await updateGlobalTasks(nextEnvelope)
-      setSuccess('Salvo com sucesso.')
+      setSuccess('Atualizado localmente. Exporte e atualize o repo (public/tarefas-globais.json).')
       if (autoExport) downloadJson('tarefas-globais.json', saved ?? nextEnvelope)
     } catch (e) {
       setError(e?.message || String(e))
@@ -196,7 +196,7 @@ export default function AdminPage() {
       const normalized = tasksImported.map(normalizeGlobalTask)
       const next = { ...envelope, ...imported, tasks: normalized }
       const saved = await updateGlobalTasks(next)
-      setSuccess('Importado com sucesso.')
+      setSuccess('Importado no rascunho local. Exporte e atualize o repo (public/tarefas-globais.json).')
       if (autoExport) downloadJson('tarefas-globais.json', saved ?? next)
     } catch (err) {
       setError(err?.message || String(err))
@@ -276,7 +276,7 @@ export default function AdminPage() {
           </div>
         ) : null}
         <div className="mt-2 text-xs text-muted">
-          Storage global: {storageConfigured ? storeKind : 'não configurado'}.
+          Base global: {storageConfigured ? storeKind : 'não configurado'}.
         </div>
         {!storageConfigured ? (
           <div className="mt-1 text-xs text-muted">
@@ -288,7 +288,7 @@ export default function AdminPage() {
       <div className="mt-4 rounded-2xl border border-app bg-surface p-4">
         <div className="text-sm font-semibold text-app">Adicionar tarefa global</div>
         <p className="mt-1 text-xs text-muted">
-          Ao salvar, o backend atualiza as tarefas globais (para todos). Opcionalmente você pode baixar o JSON.
+          Ao salvar, este painel atualiza um rascunho local. Para valer para todos, exporte e substitua `public/tarefas-globais.json` no repo (commit + deploy).
         </p>
         <label className="mt-3 inline-flex select-none items-center gap-2 text-xs text-muted">
           <input

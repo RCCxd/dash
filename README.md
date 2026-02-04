@@ -8,15 +8,14 @@ Aplicação Web (SPA) para substituir planilhas: **tarefas** e **rotina semanal*
 - Tailwind CSS (UI responsiva + temas)
 - Lucide-React (ícones)
 - Persistência por usuário: React Context + `localStorage`
-- Backend (API): Vercel Functions (`/api/*`)
-- Persistência global (tarefas): Redis (Upstash via Vercel Marketplace)
+- Tarefas globais (para todos): arquivo versionado `public/tarefas-globais.json`
 
 ## Funcionalidades
 
 - **Dashboard & Tarefas**: tarefas globais (criadas pelo admin) + tarefas pessoais (editáveis) + filtros + cada usuário marca como concluída no próprio dispositivo.
 - **Rotina**: grade semanal manual e local (cada pessoa monta a própria rotina no dispositivo).
 - **Configurações**: tema (Marista/Claro/Escuro/Personalizado com HEX), fonte, contraste e outras opções.
-- **Admin (no site)**: em **Configurações**, defina a senha do admin para liberar o menu **Admin** e gerenciar/importar/exportar tarefas globais. Se `ADMIN_PASSWORD` estiver configurada no backend, a senha deve bater com ela.
+- **Admin (no site)**: em **Configurações**, defina qualquer senha para liberar o menu **Admin** (neste dispositivo) e gerenciar/importar/exportar tarefas globais.
 
 ## Rodar localmente
 
@@ -24,10 +23,6 @@ Aplicação Web (SPA) para substituir planilhas: **tarefas** e **rotina semanal*
 npm install
 npm run dev
 ```
-
-Observação: `npm run dev` roda apenas o frontend. Para usar **dados globais** localmente:
-
-- Instale o Vercel CLI e rode `vercel dev`.
 
 ## Build
 
@@ -44,18 +39,12 @@ npm run preview
 
 Se o build falhar com exit `126`, faça redeploy com **Clear build cache** (ou deixe o `prebuild` corrigir permissões de executáveis em `node_modules`).
 
-### Variáveis de ambiente (Vercel)
+## Fluxo de tarefas globais (manual)
 
-- `ADMIN_PASSWORD` (opcional): quando definida, bloqueia qualquer `PUT` em `/api/global-data` sem o header `x-admin-password`.
-
-### Storage global (recomendado)
-
-Conecte um Redis do marketplace (Upstash) para persistir tarefas globais (para todos). O backend usa estas env vars:
-
-- `UPSTASH_REDIS_REST_URL`
-- `UPSTASH_REDIS_REST_TOKEN`
-
-Sem isso, o backend usa um fallback simples em arquivo (no Vercel é em `/tmp`), que pode resetar em cold starts.
+1) Abra **Configurações → Admin** e edite as tarefas globais.
+2) Clique em **Exportar** (ou deixe o auto-download ativado) para gerar `tarefas-globais.json`.
+3) Substitua o arquivo `public/tarefas-globais.json` pelo exportado e dê commit.
+4) Faça deploy. A nova versão passa a valer para todos.
 
 ## Dados (localStorage)
 
