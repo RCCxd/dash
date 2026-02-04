@@ -1,3 +1,44 @@
 {
-  "tasks": []
+  "tasks": [
+    {
+      "id": "aa660565-8b4f-4ad6-a1d5-9bde980beb9d",
+      "subject": "História",
+      "title": "Livro Modulo 5",
+      "description": "PG. 639, 640, 643 e 647",
+      "dueDate": "2026-02-09",
+      "priority": "high",
+      "createdAt": 1770235504153,
+      "updatedAt": 1770235504153
+    },
+    {
+      "id": "69113828-5101-477f-b1e5-1c7cb239651f",
+      "subject": "Itinerario Humanas",
+      "title": "Apresentação de Mestre Vitor",
+      "description": "",
+      "dueDate": "2026-02-10",
+      "priority": "high",
+      "createdAt": 1770235434279,
+      "updatedAt": 1770235434279
+    },
+    {
+      "id": "502c6390-4941-48be-a6aa-8eb6748d45f5",
+      "subject": "Itinerário Linguagens",
+      "title": "Atividade no Caderno",
+      "description": "",
+      "dueDate": "2026-02-16",
+      "priority": "medium",
+      "createdAt": 1770235386928,
+      "updatedAt": 1770235520627
+    },
+    {
+      "id": "3fa604b0-b839-454e-9993-4295320ddf70",
+      "subject": "IPV",
+      "title": "Atividade e Mascara",
+      "description": "Detalhes no Caderno",
+      "dueDate": "2026-02-09",
+      "priority": "low",
+      "createdAt": 1770235348173,
+      "updatedAt": 1770235348173
+    }
+  ]
 }
