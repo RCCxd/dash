@@ -136,7 +136,7 @@ module.exports = async (req, res) => {
             },
           },
         },
-        required: ['title', 'reply', 'events'],
+        required: ['title', 'reply', 'notes', 'events'],
       },
     }
 
