@@ -68,13 +68,93 @@ function sanitizeMessages(raw) {
 function localFallback(userText) {
   const title = 'Rotina sugerida (modo offline)'
   const reply =
-    'Não encontrei uma OpenAI API Key. Configure em Configurações → IA ou defina OPENAI_API_KEY no deploy.'
+    'Sem IA configurada. Em Configurações → IA, escolha OpenAI (com API Key) ou Ollama (local/grátis).'
   const events = [
     { day: 0, start: '19:00', end: '20:30', title: 'Foco: tarefa mais urgente' },
     { day: 2, start: '19:00', end: '20:00', title: 'Revisão: matérias da semana' },
     { day: 4, start: '18:30', end: '19:30', title: 'Leitura/Resumos' },
   ]
   return { title, reply, events, notes: [userText].filter(Boolean) }
+}
+
+function quotaFallback(userText) {
+  const title = 'Rotina sugerida (quota excedida)'
+  const reply =
+    'Sua OpenAI API Key está sem créditos (insufficient_quota). Verifique billing/limites no OpenAI Dashboard, troque a chave em Configurações → IA, ou use Ollama (local/grátis).'
+  const base = localFallback(userText)
+  return { ...base, title, reply }
+}
+
+function rateLimitFallback(userText) {
+  const title = 'Rotina sugerida (muitas requisições)'
+  const reply =
+    'A OpenAI retornou rate limit (429). Aguarde alguns segundos e tente novamente, ou use um modelo mais barato/rápido.'
+  const base = localFallback(userText)
+  return { ...base, title, reply }
+}
+
+function safeParseJson(text) {
+  const raw = String(text || '').trim()
+  if (!raw) return null
+
+  const withoutFence = raw
+    .replace(/^```(?:json)?/i, '')
+    .replace(/```$/i, '')
+    .trim()
+
+  try {
+    return JSON.parse(withoutFence)
+  } catch {
+    // try to recover the first JSON object in the text
+    const start = withoutFence.indexOf('{')
+    const end = withoutFence.lastIndexOf('}')
+    if (start >= 0 && end > start) {
+      const candidate = withoutFence.slice(start, end + 1)
+      try {
+        return JSON.parse(candidate)
+      } catch {
+        return null
+      }
+    }
+    return null
+  }
+}
+
+function normalizeOllamaBaseUrl(value) {
+  const v = String(value || '').trim()
+  if (!v) return ''
+  return v.replace(/\/+$/, '')
+}
+
+function isLocalhostUrl(value) {
+  try {
+    const u = new URL(String(value))
+    const host = u.hostname
+    return host === 'localhost' || host === '127.0.0.1' || host === '::1'
+  } catch {
+    return false
+  }
+}
+
+async function ollamaChat({ baseUrl, model, messages }) {
+  const url = `${normalizeOllamaBaseUrl(baseUrl)}/api/chat`
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      model,
+      messages,
+      stream: false,
+    }),
+  })
+  if (!resp.ok) {
+    const text = await resp.text().catch(() => '')
+    throw new Error(`Ollama: ${resp.status} ${text}`)
+  }
+  const data = await resp.json()
+  const content = data?.message?.content
+  if (!content) throw new Error('Ollama: resposta inválida.')
+  return content
 }
 
 function readBody(req) {
@@ -104,10 +184,12 @@ module.exports = async (req, res) => {
 
     if (!lastUserText) return json(res, { ok: false, error: 'messages/userText é obrigatório.' }, 400)
 
+    const providerRaw = String(body.provider || '').trim().toLowerCase()
+    const provider = providerRaw === 'ollama' ? 'ollama' : 'openai'
+
     const headers = req.headers || {}
     const headerKey = headers['x-openai-key'] || headers['X-OpenAI-Key']
     const apiKey = headerKey || process.env.OPENAI_API_KEY
-    if (!apiKey) return json(res, { ok: true, source: 'fallback', ...localFallback(lastUserText) })
 
     const headerModel = headers['x-openai-model'] || headers['X-OpenAI-Model']
     const model = headerModel || process.env.OPENAI_MODEL || 'gpt-4o-mini'
@@ -163,6 +245,59 @@ module.exports = async (req, res) => {
     const input = [{ role: 'system', content: system }, ...messages]
     if (messages.length === 0) input.push({ role: 'user', content: lastUserText })
 
+    if (provider === 'ollama') {
+      const ollamaBody = body.ollama && typeof body.ollama === 'object' ? body.ollama : {}
+      const envBaseUrl = process.env.OLLAMA_BASE_URL
+      const envModel = process.env.OLLAMA_MODEL
+
+      const baseUrl = normalizeOllamaBaseUrl(envBaseUrl || ollamaBody.baseUrl || 'http://localhost:11434')
+      const ollamaModel = String(envModel || ollamaBody.model || '').trim()
+
+      if (!ollamaModel) {
+        return json(res, {
+          ok: true,
+          source: 'fallback',
+          ...localFallback(lastUserText),
+          title: 'IA local (Ollama) não configurada',
+          reply: 'Defina um modelo do Ollama em Configurações → IA (ex: llama3.1:8b).',
+        })
+      }
+
+      if (!envBaseUrl && !isLocalhostUrl(baseUrl)) {
+        return json(res, {
+          ok: false,
+          error:
+            'Ollama Base URL inválida. Por segurança, só aceito localhost/127.0.0.1 (ou configure OLLAMA_BASE_URL no backend).',
+        }, 400)
+      }
+
+      const content = await ollamaChat({ baseUrl, model: ollamaModel, messages: input })
+      const parsed = safeParseJson(content)
+      if (!parsed) {
+        return json(res, {
+          ok: true,
+          source: 'fallback',
+          ...localFallback(lastUserText),
+          title: 'Resposta inválida do Ollama',
+          reply:
+            'O modelo respondeu, mas não retornou JSON válido. Tente outro modelo e peça “retorne apenas JSON”.',
+          notes: [String(content).slice(0, 400)],
+        })
+      }
+
+      const events = normalizeEvents(parsed.events)
+      return json(res, {
+        ok: true,
+        source: 'ollama',
+        title: String(parsed.title || 'Rotina sugerida'),
+        reply: String(parsed.reply || ''),
+        notes: Array.isArray(parsed.notes) ? parsed.notes.map(String) : [],
+        events,
+      })
+    }
+
+    if (!apiKey) return json(res, { ok: true, source: 'fallback', ...localFallback(lastUserText) })
+
     const resp = await fetch('https://api.openai.com/v1/responses', {
       method: 'POST',
       headers: {
@@ -184,8 +319,86 @@ module.exports = async (req, res) => {
     })
 
     if (!resp.ok) {
-      const text = await resp.text()
-      return json(res, { ok: false, error: `OpenAI: ${resp.status} ${text}` }, 502)
+      let payloadText = ''
+      let payloadJson = null
+      try {
+        payloadJson = await resp.json()
+      } catch {
+        try {
+          payloadText = await resp.text()
+        } catch {
+          payloadText = ''
+        }
+      }
+
+      const code = payloadJson?.error?.code
+      if (resp.status === 429 && code === 'insufficient_quota') {
+        // If OpenAI is out of credits, try Ollama (local) if configured.
+        try {
+          const ollamaBody = body.ollama && typeof body.ollama === 'object' ? body.ollama : {}
+          const envBaseUrl = process.env.OLLAMA_BASE_URL
+          const envModel = process.env.OLLAMA_MODEL
+          const baseUrl = normalizeOllamaBaseUrl(
+            envBaseUrl || ollamaBody.baseUrl || 'http://localhost:11434',
+          )
+          const ollamaModel = String(envModel || ollamaBody.model || '').trim()
+
+          const allowed = Boolean(envBaseUrl) || isLocalhostUrl(baseUrl)
+          if (allowed && ollamaModel) {
+            const content = await ollamaChat({ baseUrl, model: ollamaModel, messages: input })
+            const parsed = safeParseJson(content)
+            if (parsed) {
+              const events = normalizeEvents(parsed.events)
+              return json(res, {
+                ok: true,
+                source: 'ollama',
+                title: String(parsed.title || 'Rotina sugerida'),
+                reply: String(parsed.reply || ''),
+                notes: Array.isArray(parsed.notes) ? parsed.notes.map(String) : [],
+                events,
+              })
+            }
+          }
+        } catch {
+          // ignore and fall back
+        }
+        return json(res, { ok: true, source: 'fallback', ...quotaFallback(lastUserText) })
+      }
+      if (resp.status === 429 && code === 'rate_limit_exceeded') {
+        // If OpenAI rate-limited, try Ollama (local) if configured.
+        try {
+          const ollamaBody = body.ollama && typeof body.ollama === 'object' ? body.ollama : {}
+          const envBaseUrl = process.env.OLLAMA_BASE_URL
+          const envModel = process.env.OLLAMA_MODEL
+          const baseUrl = normalizeOllamaBaseUrl(
+            envBaseUrl || ollamaBody.baseUrl || 'http://localhost:11434',
+          )
+          const ollamaModel = String(envModel || ollamaBody.model || '').trim()
+
+          const allowed = Boolean(envBaseUrl) || isLocalhostUrl(baseUrl)
+          if (allowed && ollamaModel) {
+            const content = await ollamaChat({ baseUrl, model: ollamaModel, messages: input })
+            const parsed = safeParseJson(content)
+            if (parsed) {
+              const events = normalizeEvents(parsed.events)
+              return json(res, {
+                ok: true,
+                source: 'ollama',
+                title: String(parsed.title || 'Rotina sugerida'),
+                reply: String(parsed.reply || ''),
+                notes: Array.isArray(parsed.notes) ? parsed.notes.map(String) : [],
+                events,
+              })
+            }
+          }
+        } catch {
+          // ignore and fall back
+        }
+        return json(res, { ok: true, source: 'fallback', ...rateLimitFallback(lastUserText) })
+      }
+
+      const raw = payloadJson ? JSON.stringify(payloadJson) : payloadText
+      return json(res, { ok: false, error: `OpenAI: ${resp.status} ${raw}` }, 502)
     }
 
     const data = await resp.json()

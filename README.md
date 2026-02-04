@@ -49,6 +49,8 @@ Se o build falhar com exit `126`, faça redeploy com **Clear build cache** (ou d
 - `OPENAI_API_KEY` (opcional): habilita a IA no endpoint `/api/routine-ai`.
 - `OPENAI_MODEL` (opcional): default `gpt-4o-mini`.
 - `ADMIN_PASSWORD` (opcional): quando definida, bloqueia qualquer `PUT` em `/api/global-data` sem o header `x-admin-password`.
+- `OLLAMA_BASE_URL` (opcional): URL do servidor Ollama para usar IA local (ex: `http://localhost:11434` quando rodando via `vercel dev`).
+- `OLLAMA_MODEL` (opcional): modelo do Ollama (ex: `llama3.1:8b`).
 
 ### Storage global (recomendado)
 

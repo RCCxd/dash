@@ -124,15 +124,28 @@ function RoutineGrid({ events }) {
   )
 }
 
-async function requestRoutineAI({ messages, tasks, openAiKey, openAiModel }) {
+async function requestRoutineAI({
+  messages,
+  tasks,
+  aiProvider,
+  openAiKey,
+  openAiModel,
+  ollamaBaseUrl,
+  ollamaModel,
+}) {
   const resp = await fetch('/api/routine-ai', {
     method: 'POST',
     headers: {
       'content-type': 'application/json',
-      ...(openAiKey ? { 'x-openai-key': openAiKey } : null),
-      ...(openAiModel ? { 'x-openai-model': openAiModel } : null),
+      ...(aiProvider === 'openai' && openAiKey ? { 'x-openai-key': openAiKey } : null),
+      ...(aiProvider === 'openai' && openAiModel ? { 'x-openai-model': openAiModel } : null),
     },
-    body: JSON.stringify({ messages, tasks }),
+    body: JSON.stringify({
+      messages,
+      tasks,
+      provider: aiProvider || 'openai',
+      ollama: { baseUrl: ollamaBaseUrl || '', model: ollamaModel || '' },
+    }),
   })
   const data = await resp.json()
   if (!resp.ok || !data.ok) throw new Error(data.error || 'Falha ao gerar rotina.')
@@ -196,8 +209,11 @@ export default function RoutinePage() {
       const data = await requestRoutineAI({
         messages: history,
         tasks,
+        aiProvider: settings.aiProvider || 'openai',
         openAiKey: settings.openAiKey || '',
         openAiModel: settings.openAiModel || '',
+        ollamaBaseUrl: settings.ollamaBaseUrl || '',
+        ollamaModel: settings.ollamaModel || '',
       })
       setSuggestion(data)
       setMessages((prev) => [

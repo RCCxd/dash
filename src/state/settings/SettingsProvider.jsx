@@ -14,8 +14,11 @@ const DEFAULTS = {
   defaultTaskFilter: 'pending', // all | pending | done
   routineSaveMode: 'replace', // replace | append
   autoScrollChat: true,
+  aiProvider: 'openai', // openai | ollama
   openAiKey: '',
   openAiModel: '',
+  ollamaBaseUrl: 'http://localhost:11434',
+  ollamaModel: '',
 }
 
 function buildPalette(settings) {

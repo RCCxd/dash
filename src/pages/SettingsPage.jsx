@@ -263,40 +263,99 @@ export default function SettingsPage() {
             grade”.
           </div>
 
-          <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
-            <label className="rounded-2xl border border-app bg-surface p-4">
-              <div className="text-sm font-semibold text-app">OpenAI API Key (local)</div>
-              <p className="mt-1 text-xs text-muted">
-                Salva só neste dispositivo (localStorage) e é enviada no pedido da IA.
-              </p>
-              <input
-                type="password"
-                value={settings.openAiKey || ''}
-                onChange={(e) => updateSettings({ openAiKey: e.target.value })}
-                placeholder="sk-..."
-                className="mt-3 h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
-              />
-              <div className="mt-2 text-xs text-muted">Use apenas em dispositivo confiável.</div>
-            </label>
+          <label className="mt-4 block">
+            <div className="text-xs font-medium text-muted">Provedor</div>
+            <select
+              value={settings.aiProvider || 'openai'}
+              onChange={(e) => updateSettings({ aiProvider: e.target.value })}
+              className="mt-1 h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app focus:outline-none"
+            >
+              <option value="openai">OpenAI (pago / precisa de créditos)</option>
+              <option value="ollama">Ollama (local / grátis)</option>
+            </select>
+            <div className="mt-2 text-xs text-muted">
+              Para não pagar, use <span className="font-medium text-app">Ollama</span> no seu PC (o backend
+              precisa estar rodando localmente via <span className="font-mono">vercel dev</span>).
+            </div>
+          </label>
 
-            <label className="rounded-2xl border border-app bg-surface p-4">
-              <div className="text-sm font-semibold text-app">Modelo (opcional)</div>
-              <p className="mt-1 text-xs text-muted">Se vazio, usa o padrão do backend.</p>
-              <input
-                value={settings.openAiModel || ''}
-                onChange={(e) => updateSettings({ openAiModel: e.target.value })}
-                placeholder="Ex: gpt-4o-mini"
-                className="mt-3 h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
-              />
-              <button
-                type="button"
-                onClick={() => updateSettings({ openAiKey: '', openAiModel: '' })}
-                className="mt-3 h-10 w-full rounded-xl border border-app bg-surface text-sm font-medium text-app hover:bg-surface2"
-              >
-                Limpar chave/modelo
-              </button>
-            </label>
-          </div>
+          {settings.aiProvider === 'ollama' ? (
+            <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+              <label className="rounded-2xl border border-app bg-surface p-4">
+                <div className="text-sm font-semibold text-app">Ollama Base URL</div>
+                <p className="mt-1 text-xs text-muted">
+                  Normalmente é <span className="font-mono">http://localhost:11434</span>.
+                </p>
+                <input
+                  value={settings.ollamaBaseUrl || ''}
+                  onChange={(e) => updateSettings({ ollamaBaseUrl: e.target.value })}
+                  placeholder="http://localhost:11434"
+                  className="mt-3 h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
+                />
+                <div className="mt-2 text-xs text-muted">
+                  Em produção no Vercel, isso não consegue acessar o seu PC. Use localmente, ou configure{' '}
+                  <span className="font-mono">OLLAMA_BASE_URL</span> no backend apontando para um servidor seu.
+                </div>
+              </label>
+
+              <label className="rounded-2xl border border-app bg-surface p-4">
+                <div className="text-sm font-semibold text-app">Modelo</div>
+                <p className="mt-1 text-xs text-muted">
+                  Ex: <span className="font-mono">llama3.1:8b</span> (precisa estar instalado no Ollama).
+                </p>
+                <input
+                  value={settings.ollamaModel || ''}
+                  onChange={(e) => updateSettings({ ollamaModel: e.target.value })}
+                  placeholder="llama3.1:8b"
+                  className="mt-3 h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    updateSettings({ ollamaBaseUrl: 'http://localhost:11434', ollamaModel: '' })
+                  }
+                  className="mt-3 h-10 w-full rounded-xl border border-app bg-surface text-sm font-medium text-app hover:bg-surface2"
+                >
+                  Resetar Ollama
+                </button>
+              </label>
+            </div>
+          ) : (
+            <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+              <label className="rounded-2xl border border-app bg-surface p-4">
+                <div className="text-sm font-semibold text-app">OpenAI API Key (local)</div>
+                <p className="mt-1 text-xs text-muted">
+                  Salva só neste dispositivo (localStorage) e é enviada no pedido da IA.
+                </p>
+                <input
+                  type="password"
+                  value={settings.openAiKey || ''}
+                  onChange={(e) => updateSettings({ openAiKey: e.target.value })}
+                  placeholder="sk-..."
+                  className="mt-3 h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
+                />
+                <div className="mt-2 text-xs text-muted">Use apenas em dispositivo confiável.</div>
+              </label>
+
+              <label className="rounded-2xl border border-app bg-surface p-4">
+                <div className="text-sm font-semibold text-app">Modelo (opcional)</div>
+                <p className="mt-1 text-xs text-muted">Se vazio, usa o padrão do backend.</p>
+                <input
+                  value={settings.openAiModel || ''}
+                  onChange={(e) => updateSettings({ openAiModel: e.target.value })}
+                  placeholder="Ex: gpt-4o-mini"
+                  className="mt-3 h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => updateSettings({ openAiKey: '', openAiModel: '' })}
+                  className="mt-3 h-10 w-full rounded-xl border border-app bg-surface text-sm font-medium text-app hover:bg-surface2"
+                >
+                  Limpar chave/modelo
+                </button>
+              </label>
+            </div>
+          )}
         </Section>
 
         <Section
