@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Download, Plus, Trash2 } from 'lucide-react'
+import { Download, Pencil, Plus, Trash2, Upload, X } from 'lucide-react'
 import { useGlobalData } from '../state/global/globalDataContext.js'
 import { newId } from '../utils/ids.js'
 import { downloadJson } from '../utils/download.js'
@@ -26,11 +26,31 @@ function sortGlobalTasks(list) {
   })
 }
 
+function normalizeGlobalTask(input) {
+  const now = Date.now()
+  const id = String(input?.id || '').trim() || newId()
+  const createdAt = Number.isFinite(Number(input?.createdAt)) ? Number(input.createdAt) : now
+  const updatedAt = Number.isFinite(Number(input?.updatedAt)) ? Number(input.updatedAt) : now
+  const priority = input?.priority === 'high' || input?.priority === 'low' ? input.priority : 'medium'
+  return {
+    id,
+    subject: String(input?.subject || ''),
+    title: String(input?.title || ''),
+    description: String(input?.description || ''),
+    dueDate: String(input?.dueDate || ''),
+    priority,
+    createdAt,
+    updatedAt,
+  }
+}
+
 export default function AdminPage() {
   const {
     tasks: globalTasks,
     updateGlobalTasks,
     isAdmin,
+    authRequired,
+    adminOk,
     storageConfigured,
     storeKind,
     adminPassword,
@@ -49,9 +69,41 @@ export default function AdminPage() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [autoExport, setAutoExport] = useState(true)
+  const [editOpen, setEditOpen] = useState(false)
+  const [editing, setEditing] = useState(null)
+  const [editForm, setEditForm] = useState({
+    subject: '',
+    title: '',
+    description: '',
+    dueDate: '',
+    priority: 'medium',
+  })
 
   function set(name, value) {
     setForm((prev) => ({ ...prev, [name]: value }))
+  }
+
+  function setEdit(name, value) {
+    setEditForm((prev) => ({ ...prev, [name]: value }))
+  }
+
+  function openEdit(task) {
+    if (!task) return
+    setEditing(task)
+    setEditForm({
+      subject: task.subject || '',
+      title: task.title || '',
+      description: task.description || '',
+      dueDate: task.dueDate || '',
+      priority: task.priority || 'medium',
+    })
+    setEditOpen(true)
+  }
+
+  function closeEdit() {
+    setEditOpen(false)
+    setEditing(null)
   }
 
   async function saveEnvelope(nextEnvelope, { autoExport = true } = {}) {
@@ -87,7 +139,7 @@ export default function AdminPage() {
       updatedAt: now,
     }
     const next = { ...envelope, tasks: [nextTask, ...envelope.tasks] }
-    await saveEnvelope(next, { autoExport: true })
+    await saveEnvelope(next, { autoExport })
     setForm((p) => ({ ...p, title: '', description: '' }))
   }
 
@@ -95,7 +147,62 @@ export default function AdminPage() {
     if (!isAdmin) return
     if (!storageConfigured) return
     const next = { ...envelope, tasks: envelope.tasks.filter((t) => t?.id !== id) }
-    await saveEnvelope(next, { autoExport: true })
+    await saveEnvelope(next, { autoExport })
+  }
+
+  async function onSaveEdit(e) {
+    e.preventDefault()
+    if (!isAdmin) return
+    if (!storageConfigured) return
+
+    const title = String(editForm.title || '').trim()
+    if (!title) return
+
+    const taskId = String(editing?.id || '').trim()
+    if (!taskId) return
+
+    const now = Date.now()
+    const nextTask = normalizeGlobalTask({
+      ...(editing || {}),
+      subject: String(editForm.subject || '').trim(),
+      title,
+      description: String(editForm.description || '').trim(),
+      dueDate: editForm.dueDate || '',
+      priority: editForm.priority || 'medium',
+      updatedAt: now,
+    })
+
+    const next = { ...envelope, tasks: envelope.tasks.map((t) => (t?.id === taskId ? nextTask : t)) }
+    await saveEnvelope(next, { autoExport })
+    closeEdit()
+  }
+
+  async function onImportFile(e) {
+    const file = e?.target?.files?.[0]
+    if (!file) return
+    e.target.value = ''
+
+    if (!isAdmin) return
+    if (!storageConfigured) return
+
+    setError('')
+    setSuccess('')
+    setBusy(true)
+    try {
+      const raw = await file.text()
+      const parsed = JSON.parse(raw)
+      const imported = Array.isArray(parsed) ? { tasks: parsed } : normalizeEnvelope(parsed)
+      const tasksImported = Array.isArray(imported.tasks) ? imported.tasks : []
+      const normalized = tasksImported.map(normalizeGlobalTask)
+      const next = { ...envelope, ...imported, tasks: normalized }
+      const saved = await updateGlobalTasks(next)
+      setSuccess('Importado com sucesso.')
+      if (autoExport) downloadJson('tarefas-globais.json', saved ?? next)
+    } catch (err) {
+      setError(err?.message || String(err))
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
@@ -107,27 +214,50 @@ export default function AdminPage() {
             Adicione tarefas globais e exporte automaticamente em JSON.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => downloadJson('tarefas-globais.json', envelope)}
-          className="inline-flex items-center gap-2 rounded-xl border border-app bg-surface px-3 py-2 text-sm text-app hover:bg-surface2"
-        >
-          <Download className="h-4 w-4" />
-          Exportar
-        </button>
+        <div className="flex items-center gap-2">
+          <label
+            className={[
+              'inline-flex cursor-pointer items-center gap-2 rounded-xl border border-app bg-surface px-3 py-2 text-sm',
+              !isAdmin || busy || !storageConfigured
+                ? 'cursor-not-allowed bg-surface2 text-muted'
+                : 'text-app hover:bg-surface2',
+            ].join(' ')}
+          >
+            <input
+              type="file"
+              accept="application/json"
+              onChange={onImportFile}
+              disabled={!isAdmin || busy || !storageConfigured}
+              className="hidden"
+            />
+            <Upload className="h-4 w-4" />
+            Importar
+          </label>
+
+          <button
+            type="button"
+            onClick={() => downloadJson('tarefas-globais.json', envelope)}
+            className="inline-flex items-center gap-2 rounded-xl border border-app bg-surface px-3 py-2 text-sm text-app hover:bg-surface2"
+          >
+            <Download className="h-4 w-4" />
+            Exportar
+          </button>
+        </div>
       </div>
 
       <div className="mt-4 rounded-2xl border border-app bg-surface p-4">
         <div className="text-sm font-semibold text-app">Senha do admin</div>
         <p className="mt-1 text-xs text-muted">
-          Digite qualquer senha para desbloquear o admin neste dispositivo.
+          {authRequired
+            ? 'Digite a senha configurada em ADMIN_PASSWORD no backend (somente ela libera salvar/importar).'
+            : 'Digite qualquer senha para desbloquear o admin neste dispositivo.'}
         </p>
         <div className="mt-3 flex items-center gap-2">
           <input
             type="password"
             value={adminPassword || ''}
             onChange={(e) => setAdminPassword(e.target.value)}
-            placeholder="Qualquer senha"
+            placeholder={authRequired ? 'Senha do admin' : 'Qualquer senha'}
             className="h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
           />
           {isAdmin ? (
@@ -140,6 +270,11 @@ export default function AdminPage() {
             </button>
           ) : null}
         </div>
+        {authRequired && adminPassword && !adminOk ? (
+          <div className="mt-2 text-xs text-red-200">
+            Senha incorreta para este backend. Sem a senha certa você não consegue salvar/importar.
+          </div>
+        ) : null}
         <div className="mt-2 text-xs text-muted">
           Storage global: {storageConfigured ? storeKind : 'não configurado'}.
         </div>
@@ -153,8 +288,17 @@ export default function AdminPage() {
       <div className="mt-4 rounded-2xl border border-app bg-surface p-4">
         <div className="text-sm font-semibold text-app">Adicionar tarefa global</div>
         <p className="mt-1 text-xs text-muted">
-          Ao salvar, o sistema baixa automaticamente o arquivo `tarefas-globais.json`.
+          Ao salvar, o backend atualiza as tarefas globais (para todos). Opcionalmente você pode baixar o JSON.
         </p>
+        <label className="mt-3 inline-flex select-none items-center gap-2 text-xs text-muted">
+          <input
+            type="checkbox"
+            checked={autoExport}
+            onChange={(e) => setAutoExport(e.target.checked)}
+            className="h-4 w-4 rounded border border-app bg-surface text-[var(--primary)]"
+          />
+          Baixar `tarefas-globais.json` automaticamente ao salvar/importar
+        </label>
 
         <form onSubmit={onAdd} className="mt-4 space-y-3">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -260,20 +404,36 @@ export default function AdminPage() {
                   <div className="mt-1 line-clamp-2 text-sm text-muted">{t.description}</div>
                 ) : null}
               </div>
-              <button
-                type="button"
-                disabled={!isAdmin || busy || !storageConfigured}
-                onClick={() => onDelete(t.id)}
-                className={[
-                  'inline-flex h-9 w-9 items-center justify-center rounded-xl border border-app bg-surface text-app',
-                  !isAdmin || busy || !storageConfigured
-                    ? 'cursor-not-allowed opacity-60'
-                    : 'hover:bg-surface2',
-                ].join(' ')}
-                aria-label="Excluir"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
+              <div className="flex shrink-0 items-center gap-2">
+                <button
+                  type="button"
+                  disabled={!isAdmin || busy || !storageConfigured}
+                  onClick={() => openEdit(t)}
+                  className={[
+                    'inline-flex h-9 w-9 items-center justify-center rounded-xl border border-app bg-surface text-app',
+                    !isAdmin || busy || !storageConfigured
+                      ? 'cursor-not-allowed opacity-60'
+                      : 'hover:bg-surface2',
+                  ].join(' ')}
+                  aria-label="Editar"
+                >
+                  <Pencil className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  disabled={!isAdmin || busy || !storageConfigured}
+                  onClick={() => onDelete(t.id)}
+                  className={[
+                    'inline-flex h-9 w-9 items-center justify-center rounded-xl border border-app bg-surface text-app',
+                    !isAdmin || busy || !storageConfigured
+                      ? 'cursor-not-allowed opacity-60'
+                      : 'hover:bg-surface2',
+                  ].join(' ')}
+                  aria-label="Excluir"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           </div>
         ))}
@@ -284,6 +444,96 @@ export default function AdminPage() {
           </div>
         ) : null}
       </div>
+
+      {editOpen ? (
+        <div className="fixed inset-0 z-30 flex items-end justify-center bg-black/40 p-4 md:items-center">
+          <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-app bg-surface shadow-xl">
+            <div className="flex items-center justify-between border-b border-app px-4 py-3">
+              <div className="text-sm font-semibold text-app">Editar tarefa global</div>
+              <button
+                type="button"
+                onClick={closeEdit}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-app bg-surface text-app hover:bg-surface2"
+                aria-label="Fechar"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form onSubmit={onSaveEdit} className="space-y-3 p-4">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <label className="block">
+                  <div className="text-xs font-medium text-muted">Matéria</div>
+                  <input
+                    value={editForm.subject}
+                    onChange={(e) => setEdit('subject', e.target.value)}
+                    placeholder="Ex: Matemática"
+                    className="mt-1 h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
+                  />
+                </label>
+                <label className="block">
+                  <div className="text-xs font-medium text-muted">Data de entrega</div>
+                  <input
+                    type="date"
+                    value={editForm.dueDate}
+                    onChange={(e) => setEdit('dueDate', e.target.value)}
+                    className="mt-1 h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app focus:outline-none"
+                  />
+                </label>
+              </div>
+
+              <label className="block">
+                <div className="text-xs font-medium text-muted">Título *</div>
+                <input
+                  value={editForm.title}
+                  onChange={(e) => setEdit('title', e.target.value)}
+                  placeholder="Ex: Lista de exercícios 3"
+                  className="mt-1 h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
+                />
+              </label>
+
+              <label className="block">
+                <div className="text-xs font-medium text-muted">Descrição</div>
+                <textarea
+                  value={editForm.description}
+                  onChange={(e) => setEdit('description', e.target.value)}
+                  rows={3}
+                  placeholder="Detalhes, links, páginas..."
+                  className="mt-1 w-full resize-none rounded-xl border border-app bg-surface px-3 py-2 text-sm text-app placeholder:text-muted focus:outline-none"
+                />
+              </label>
+
+              <label className="block">
+                <div className="text-xs font-medium text-muted">Prioridade</div>
+                <select
+                  value={editForm.priority}
+                  onChange={(e) => setEdit('priority', e.target.value)}
+                  className="mt-1 h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app focus:outline-none"
+                >
+                  {PRIORITIES.map((p) => (
+                    <option key={p.value} value={p.value}>
+                      {p.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <button
+                type="submit"
+                disabled={!isAdmin || busy || !storageConfigured}
+                className={[
+                  'h-10 w-full rounded-xl text-sm font-medium',
+                  !isAdmin || busy || !storageConfigured
+                    ? 'cursor-not-allowed bg-surface2 text-muted'
+                    : 'btn-primary',
+                ].join(' ')}
+              >
+                Salvar alterações
+              </button>
+            </form>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

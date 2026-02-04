@@ -8,6 +8,27 @@ function json(res, body, statusCode = 200) {
   res.end(JSON.stringify(body))
 }
 
+function getConfiguredAdminPassword() {
+  const v = process.env.ADMIN_PASSWORD
+  return v && String(v).trim() ? String(v).trim() : ''
+}
+
+function readHeader(req, name) {
+  const headers = req.headers || {}
+  const target = String(name).toLowerCase()
+  for (const [k, v] of Object.entries(headers)) {
+    if (String(k).toLowerCase() === target) return v
+  }
+  return undefined
+}
+
+function isAdminAuthorized(req) {
+  const configured = getConfiguredAdminPassword()
+  if (!configured) return true
+  const provided = readHeader(req, 'x-admin-password')
+  return Boolean(provided && String(provided).trim() === configured)
+}
+
 function defaultRoutine() {
   return { events: [] }
 }
@@ -110,6 +131,7 @@ module.exports = async (req, res) => {
   try {
     const method = req.method || 'GET'
     const store = await getStore()
+    const adminPasswordConfigured = Boolean(getConfiguredAdminPassword())
 
     if (method === 'GET') {
       const routine = (await store.get(KEY_ROUTINE)) || defaultRoutine()
@@ -120,10 +142,24 @@ module.exports = async (req, res) => {
         tasks,
         storageConfigured: true,
         store: store.kind,
+        authRequired: adminPasswordConfigured,
+        adminOk: adminPasswordConfigured ? isAdminAuthorized(req) : true,
       })
     }
 
     if (method === 'PUT') {
+      if (!isAdminAuthorized(req)) {
+        return json(
+          res,
+          {
+            ok: false,
+            error:
+              'Não autorizado. Envie o header x-admin-password (e configure ADMIN_PASSWORD no deploy).',
+          },
+          401,
+        )
+      }
+
       const body = readBody(req)
       const { routine, tasks } = body || {}
 
@@ -138,6 +174,8 @@ module.exports = async (req, res) => {
         tasks: nextTasks,
         storageConfigured: true,
         store: store.kind,
+        authRequired: adminPasswordConfigured,
+        adminOk: adminPasswordConfigured ? isAdminAuthorized(req) : true,
       })
     }
 

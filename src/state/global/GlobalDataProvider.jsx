@@ -11,18 +11,28 @@ function localDefaults() {
   }
 }
 
-async function apiGet() {
-  const resp = await fetch('/api/global-data', { method: 'GET' })
+async function apiGet({ adminPassword } = {}) {
+  const resp = await fetch('/api/global-data', {
+    method: 'GET',
+    headers: {
+      ...(adminPassword && String(adminPassword).trim()
+        ? { 'x-admin-password': String(adminPassword).trim() }
+        : null),
+    },
+  })
   const data = await resp.json()
   if (!resp.ok || !data.ok) throw new Error(data.error || 'Falha ao carregar dados globais.')
   return data
 }
 
-async function apiPutPartial({ patch }) {
+async function apiPutPartial({ patch, adminPassword }) {
   const resp = await fetch('/api/global-data', {
     method: 'PUT',
     headers: {
       'content-type': 'application/json',
+      ...(adminPassword && String(adminPassword).trim()
+        ? { 'x-admin-password': String(adminPassword).trim() }
+        : null),
     },
     body: JSON.stringify(patch),
   })
@@ -37,6 +47,8 @@ export function GlobalDataProvider({ children }) {
   const [routine, setRoutine] = useState(null)
   const [tasks, setTasks] = useState(null)
   const [adminPassword, setAdminPassword] = useState(() => getStoredJSON(ADMIN_PASSWORD_KEY, ''))
+  const [authRequired, setAuthRequired] = useState(false)
+  const [adminOk, setAdminOk] = useState(false)
   const [storageConfigured, setStorageConfigured] = useState(true)
   const [storeKind, setStoreKind] = useState('unknown')
 
@@ -44,22 +56,26 @@ export function GlobalDataProvider({ children }) {
     setLoading(true)
     setError('')
     try {
-      const data = await apiGet()
+      const data = await apiGet({ adminPassword })
       setRoutine(data.routine)
       setTasks(data.tasks)
       setStorageConfigured(Boolean(data.storageConfigured ?? true))
       setStoreKind(String(data.store || 'unknown'))
+      setAuthRequired(Boolean(data.authRequired))
+      setAdminOk(Boolean(data.adminOk))
     } catch (e) {
       const fallback = localDefaults()
       setRoutine(fallback.routine)
       setTasks(fallback.tasks)
+      setAuthRequired(false)
+      setAdminOk(false)
       setError(
         `${e?.message || String(e)} (usando defaults locais — para dados globais e IA, rode via Vercel Functions: vercel dev)`,
       )
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [adminPassword])
 
   useEffect(() => {
     reload()
@@ -79,21 +95,29 @@ export function GlobalDataProvider({ children }) {
       setAdminPassword,
       storageConfigured,
       storeKind,
-      isAdmin: Boolean(adminPassword && String(adminPassword).trim()),
+      authRequired,
+      adminOk,
+      isAdmin: authRequired ? Boolean(adminOk) : Boolean(adminPassword && String(adminPassword).trim()),
       reload,
       async updateGlobalRoutine(nextRoutine) {
-        const data = await apiPutPartial({ patch: { routine: nextRoutine } })
+        const data = await apiPutPartial({ patch: { routine: nextRoutine }, adminPassword })
         setRoutine(data.routine)
+        setAuthRequired(Boolean(data.authRequired))
+        setAdminOk(Boolean(data.adminOk))
         return data.routine
       },
       async updateGlobalTasks(nextTasks) {
-        const data = await apiPutPartial({ patch: { tasks: nextTasks } })
+        const data = await apiPutPartial({ patch: { tasks: nextTasks }, adminPassword })
         setTasks(data.tasks)
+        setAuthRequired(Boolean(data.authRequired))
+        setAdminOk(Boolean(data.adminOk))
         return data.tasks
       },
     }
   }, [
     adminPassword,
+    adminOk,
+    authRequired,
     error,
     loading,
     reload,

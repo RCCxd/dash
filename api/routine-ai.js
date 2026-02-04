@@ -172,7 +172,14 @@ module.exports = async (req, res) => {
       body: JSON.stringify({
         model,
         input,
-        response_format: { type: 'json_schema', json_schema: schema },
+        text: {
+          format: {
+            type: 'json_schema',
+            name: schema.name,
+            strict: true,
+            schema: schema.schema,
+          },
+        },
       }),
     })
 
@@ -182,7 +189,25 @@ module.exports = async (req, res) => {
     }
 
     const data = await resp.json()
-    const content = data?.output?.[0]?.content?.[0]?.text
+
+    const outputItems = Array.isArray(data?.output) ? data.output : []
+    const assistantMessage = outputItems.find((o) => o?.type === 'message' && o?.role === 'assistant')
+    const contentItems = Array.isArray(assistantMessage?.content) ? assistantMessage.content : []
+    const outputTextItem = contentItems.find((c) => c?.type === 'output_text' && typeof c?.text === 'string')
+    let content = outputTextItem?.text
+
+    if (!content && typeof data?.output_text === 'string') content = data.output_text
+    if (!content) {
+      for (const item of outputItems) {
+        const parts = Array.isArray(item?.content) ? item.content : []
+        const part = parts.find((p) => p?.type === 'output_text' && typeof p?.text === 'string')
+        if (part?.text) {
+          content = part.text
+          break
+        }
+      }
+    }
+
     if (!content) return json(res, { ok: false, error: 'Resposta inválida do modelo.' }, 502)
 
     const parsed = JSON.parse(content)
@@ -200,4 +225,3 @@ module.exports = async (req, res) => {
     return json(res, { ok: false, error: err?.message || String(err) }, 500)
   }
 }
-

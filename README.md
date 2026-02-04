@@ -13,10 +13,10 @@ Aplicação Web (SPA) para substituir planilhas: **tarefas** e **rotina semanal*
 
 ## Funcionalidades
 
-- **Dashboard & Tarefas**: tarefas globais (criadas pelo admin) + filtros + cada usuário marca como concluída no próprio dispositivo.
+- **Dashboard & Tarefas**: tarefas globais (criadas pelo admin) + tarefas pessoais (editáveis) + filtros + cada usuário marca como concluída no próprio dispositivo.
 - **Rotina**: grade semanal + chat com IA que gera um plano estruturado e, ao salvar, preenche sua grade (seus itens são editáveis).
 - **Configurações**: tema (Marista/Claro/Escuro/Personalizado com HEX), fonte, contraste e outras opções.
-- **Admin (no site)**: desbloqueio local por senha (qualquer senha) em **Configurações** para adicionar tarefas globais e exportar JSON automaticamente.
+- **Admin (no site)**: em **Configurações**, defina a senha do admin para liberar o menu **Admin** e gerenciar/importar/exportar tarefas globais. Se `ADMIN_PASSWORD` estiver configurada no backend, a senha deve bater com ela.
 
 ## Rodar localmente
 
@@ -48,6 +48,7 @@ Se o build falhar com exit `126`, faça redeploy com **Clear build cache** (ou d
 
 - `OPENAI_API_KEY` (opcional): habilita a IA no endpoint `/api/routine-ai`.
 - `OPENAI_MODEL` (opcional): default `gpt-4o-mini`.
+- `ADMIN_PASSWORD` (opcional): quando definida, bloqueia qualquer `PUT` em `/api/global-data` sem o header `x-admin-password`.
 
 ### Storage global (recomendado)
 
@@ -66,6 +67,7 @@ Essa chave fica no `localStorage` e é enviada no header `x-openai-key` para `/a
 ## Dados (localStorage)
 
 - Usuário (tarefas): `studentDashboard.taskStatusById.v1`
+- Usuário (tarefas pessoais): `studentDashboard.userTasks.v1`
 - Usuário (rotina): `studentDashboard.userRoutine.v1`
 - Configurações: `studentDashboard.settings.v1`
 - Senha admin (neste dispositivo): `studentDashboard.adminPassword.v1`
