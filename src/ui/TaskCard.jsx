@@ -65,7 +65,7 @@ export default function TaskCard({ task, readOnly = false, onEdit, onDelete, onT
               checked={done}
               onChange={(e) => onToggleDone?.(e.target.checked)}
               disabled={!canToggle}
-              className="h-4 w-4 rounded border border-app bg-surface text-[var(--primary)]"
+              className="h-4 w-4 rounded border border-app bg-surface text-(--primary)"
             />
             <span className="inline-flex items-center gap-1.5">
               <span>OK</span>

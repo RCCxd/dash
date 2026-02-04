@@ -1,6 +1,6 @@
 import { createElement, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Check, Palette, RotateCcw, Shield, Sliders, Wand2 } from 'lucide-react'
+import { Check, Palette, RotateCcw, Shield, Sliders } from 'lucide-react'
 import { useSettings } from '../state/settings/settingsContext.js'
 import { useGlobalData } from '../state/global/globalDataContext.js'
 import { normalizeHex } from '../utils/colors.js'
@@ -38,7 +38,7 @@ function ModeButton({ active, title, subtitle, onClick }) {
           {subtitle ? <div className="mt-1 text-xs text-muted">{subtitle}</div> : null}
         </div>
         {active ? (
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--primary)] text-[var(--on-primary)]">
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-(--primary) text-(--on-primary)">
             <Check className="h-4 w-4" />
           </span>
         ) : null}
@@ -223,139 +223,11 @@ export default function SettingsPage() {
                   type="checkbox"
                   checked={Boolean(settings.highContrast)}
                   onChange={(e) => updateSettings({ highContrast: e.target.checked })}
-                  className="h-5 w-5 rounded border border-app bg-surface text-[var(--primary)]"
+                  className="h-5 w-5 rounded border border-app bg-surface text-(--primary)"
                 />
               </div>
             </label>
-
-            <label className="rounded-2xl border border-app bg-surface p-4">
-              <div className="text-sm font-semibold text-app">Auto-scroll (IA)</div>
-              <p className="mt-1 text-xs text-muted">Manter conversa sempre no final.</p>
-              <div className="mt-3 flex items-center justify-between gap-3">
-                <span className="text-sm text-app">Ativar</span>
-                <input
-                  type="checkbox"
-                  checked={Boolean(settings.autoScrollChat)}
-                  onChange={(e) => updateSettings({ autoScrollChat: e.target.checked })}
-                  className="h-5 w-5 rounded border border-app bg-surface text-[var(--primary)]"
-                />
-              </div>
-            </label>
-
-            <label className="rounded-2xl border border-app bg-surface p-4">
-              <div className="text-sm font-semibold text-app">Salvar rotina</div>
-              <p className="mt-1 text-xs text-muted">Como aplicar o resultado da IA na grade.</p>
-              <select
-                value={settings.routineSaveMode}
-                onChange={(e) => updateSettings({ routineSaveMode: e.target.value })}
-                className="mt-3 w-full rounded-xl border border-app bg-surface px-3 py-2 text-sm text-app focus:outline-none"
-              >
-                <option value="replace">Substituir minha grade</option>
-                <option value="append">Adicionar por cima</option>
-              </select>
-            </label>
           </div>
-        </Section>
-
-        <Section icon={Wand2} title="IA" description="Configuração rápida para a IA.">
-          <div className="rounded-2xl border border-app bg-surface p-4 text-sm text-muted">
-            Dica: descreva disponibilidade (dias/horários), matérias e prazos. Depois use “Salvar na
-            grade”.
-          </div>
-
-          <label className="mt-4 block">
-            <div className="text-xs font-medium text-muted">Provedor</div>
-            <select
-              value={settings.aiProvider || 'openai'}
-              onChange={(e) => updateSettings({ aiProvider: e.target.value })}
-              className="mt-1 h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app focus:outline-none"
-            >
-              <option value="openai">OpenAI (pago / precisa de créditos)</option>
-              <option value="ollama">Ollama (local / grátis)</option>
-            </select>
-            <div className="mt-2 text-xs text-muted">
-              Para não pagar, use <span className="font-medium text-app">Ollama</span> no seu PC (o backend
-              precisa estar rodando localmente via <span className="font-mono">vercel dev</span>).
-            </div>
-          </label>
-
-          {settings.aiProvider === 'ollama' ? (
-            <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
-              <label className="rounded-2xl border border-app bg-surface p-4">
-                <div className="text-sm font-semibold text-app">Ollama Base URL</div>
-                <p className="mt-1 text-xs text-muted">
-                  Normalmente é <span className="font-mono">http://localhost:11434</span>.
-                </p>
-                <input
-                  value={settings.ollamaBaseUrl || ''}
-                  onChange={(e) => updateSettings({ ollamaBaseUrl: e.target.value })}
-                  placeholder="http://localhost:11434"
-                  className="mt-3 h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
-                />
-                <div className="mt-2 text-xs text-muted">
-                  Em produção no Vercel, isso não consegue acessar o seu PC. Use localmente, ou configure{' '}
-                  <span className="font-mono">OLLAMA_BASE_URL</span> no backend apontando para um servidor seu.
-                </div>
-              </label>
-
-              <label className="rounded-2xl border border-app bg-surface p-4">
-                <div className="text-sm font-semibold text-app">Modelo</div>
-                <p className="mt-1 text-xs text-muted">
-                  Ex: <span className="font-mono">llama3.1:8b</span> (precisa estar instalado no Ollama).
-                </p>
-                <input
-                  value={settings.ollamaModel || ''}
-                  onChange={(e) => updateSettings({ ollamaModel: e.target.value })}
-                  placeholder="llama3.1:8b"
-                  className="mt-3 h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
-                />
-                <button
-                  type="button"
-                  onClick={() =>
-                    updateSettings({ ollamaBaseUrl: 'http://localhost:11434', ollamaModel: '' })
-                  }
-                  className="mt-3 h-10 w-full rounded-xl border border-app bg-surface text-sm font-medium text-app hover:bg-surface2"
-                >
-                  Resetar Ollama
-                </button>
-              </label>
-            </div>
-          ) : (
-            <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
-              <label className="rounded-2xl border border-app bg-surface p-4">
-                <div className="text-sm font-semibold text-app">OpenAI API Key (local)</div>
-                <p className="mt-1 text-xs text-muted">
-                  Salva só neste dispositivo (localStorage) e é enviada no pedido da IA.
-                </p>
-                <input
-                  type="password"
-                  value={settings.openAiKey || ''}
-                  onChange={(e) => updateSettings({ openAiKey: e.target.value })}
-                  placeholder="sk-..."
-                  className="mt-3 h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
-                />
-                <div className="mt-2 text-xs text-muted">Use apenas em dispositivo confiável.</div>
-              </label>
-
-              <label className="rounded-2xl border border-app bg-surface p-4">
-                <div className="text-sm font-semibold text-app">Modelo (opcional)</div>
-                <p className="mt-1 text-xs text-muted">Se vazio, usa o padrão do backend.</p>
-                <input
-                  value={settings.openAiModel || ''}
-                  onChange={(e) => updateSettings({ openAiModel: e.target.value })}
-                  placeholder="Ex: gpt-4o-mini"
-                  className="mt-3 h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
-                />
-                <button
-                  type="button"
-                  onClick={() => updateSettings({ openAiKey: '', openAiModel: '' })}
-                  className="mt-3 h-10 w-full rounded-xl border border-app bg-surface text-sm font-medium text-app hover:bg-surface2"
-                >
-                  Limpar chave/modelo
-                </button>
-              </label>
-            </div>
-          )}
         </Section>
 
         <Section

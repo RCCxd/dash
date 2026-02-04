@@ -32,6 +32,15 @@ export function UserDataProvider({ children }) {
       addUserRoutineEvents(events) {
         setUserRoutine((prev) => [...events.map(normalizeEvent), ...prev])
       },
+      updateUserRoutineEvent(id, patch) {
+        const eventId = String(id || '')
+        if (!eventId) return
+        setUserRoutine((prev) =>
+          prev.map((e) =>
+            e.id === eventId ? normalizeEvent({ ...e, ...(patch || {}), id: e.id, createdAt: e.createdAt }) : e,
+          ),
+        )
+      },
       deleteUserRoutineEvent(id) {
         setUserRoutine((prev) => prev.filter((e) => e.id !== id))
       },

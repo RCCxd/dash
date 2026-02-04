@@ -6,7 +6,6 @@ const ADMIN_PASSWORD_KEY = 'studentDashboard.adminPassword.v1'
 
 function localDefaults() {
   return {
-    routine: { events: [] },
     tasks: { tasks: [] },
   }
 }
@@ -44,7 +43,6 @@ async function apiPutPartial({ patch, adminPassword }) {
 export function GlobalDataProvider({ children }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [routine, setRoutine] = useState(null)
   const [tasks, setTasks] = useState(null)
   const [adminPassword, setAdminPassword] = useState(() => getStoredJSON(ADMIN_PASSWORD_KEY, ''))
   const [authRequired, setAuthRequired] = useState(false)
@@ -57,7 +55,6 @@ export function GlobalDataProvider({ children }) {
     setError('')
     try {
       const data = await apiGet({ adminPassword })
-      setRoutine(data.routine)
       setTasks(data.tasks)
       setStorageConfigured(Boolean(data.storageConfigured ?? true))
       setStoreKind(String(data.store || 'unknown'))
@@ -65,12 +62,11 @@ export function GlobalDataProvider({ children }) {
       setAdminOk(Boolean(data.adminOk))
     } catch (e) {
       const fallback = localDefaults()
-      setRoutine(fallback.routine)
       setTasks(fallback.tasks)
       setAuthRequired(false)
       setAdminOk(false)
       setError(
-        `${e?.message || String(e)} (usando defaults locais — para dados globais e IA, rode via Vercel Functions: vercel dev)`,
+        `${e?.message || String(e)} (usando defaults locais — para dados globais, rode via Vercel Functions: vercel dev)`,
       )
     } finally {
       setLoading(false)
@@ -89,7 +85,6 @@ export function GlobalDataProvider({ children }) {
     return {
       loading,
       error,
-      routine,
       tasks,
       adminPassword,
       setAdminPassword,
@@ -99,13 +94,6 @@ export function GlobalDataProvider({ children }) {
       adminOk,
       isAdmin: authRequired ? Boolean(adminOk) : Boolean(adminPassword && String(adminPassword).trim()),
       reload,
-      async updateGlobalRoutine(nextRoutine) {
-        const data = await apiPutPartial({ patch: { routine: nextRoutine }, adminPassword })
-        setRoutine(data.routine)
-        setAuthRequired(Boolean(data.authRequired))
-        setAdminOk(Boolean(data.adminOk))
-        return data.routine
-      },
       async updateGlobalTasks(nextTasks) {
         const data = await apiPutPartial({ patch: { tasks: nextTasks }, adminPassword })
         setTasks(data.tasks)
@@ -121,7 +109,6 @@ export function GlobalDataProvider({ children }) {
     error,
     loading,
     reload,
-    routine,
     tasks,
     storageConfigured,
     storeKind,

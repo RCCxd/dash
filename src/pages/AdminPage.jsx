@@ -295,7 +295,7 @@ export default function AdminPage() {
             type="checkbox"
             checked={autoExport}
             onChange={(e) => setAutoExport(e.target.checked)}
-            className="h-4 w-4 rounded border border-app bg-surface text-[var(--primary)]"
+            className="h-4 w-4 rounded border border-app bg-surface text-(--primary)"
           />
           Baixar `tarefas-globais.json` automaticamente ao salvar/importar
         </label>

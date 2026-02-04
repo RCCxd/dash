@@ -29,10 +29,6 @@ function isAdminAuthorized(req) {
   return Boolean(provided && String(provided).trim() === configured)
 }
 
-function defaultRoutine() {
-  return { events: [] }
-}
-
 function defaultTasks() {
   return { tasks: [] }
 }
@@ -112,7 +108,6 @@ async function getStore() {
   return createFileStore(process.env.VERCEL ? 'file-tmp' : 'file-local')
 }
 
-const KEY_ROUTINE = 'global.routine.v1'
 const KEY_TASKS = 'global.tasks.v1'
 
 function readBody(req) {
@@ -134,11 +129,9 @@ module.exports = async (req, res) => {
     const adminPasswordConfigured = Boolean(getConfiguredAdminPassword())
 
     if (method === 'GET') {
-      const routine = (await store.get(KEY_ROUTINE)) || defaultRoutine()
       const tasks = (await store.get(KEY_TASKS)) || defaultTasks()
       return json(res, {
         ok: true,
-        routine,
         tasks,
         storageConfigured: true,
         store: store.kind,
@@ -161,16 +154,13 @@ module.exports = async (req, res) => {
       }
 
       const body = readBody(req)
-      const { routine, tasks } = body || {}
+      const { tasks } = body || {}
 
-      if (routine) await store.set(KEY_ROUTINE, routine)
       if (tasks) await store.set(KEY_TASKS, tasks)
 
-      const nextRoutine = (await store.get(KEY_ROUTINE)) || defaultRoutine()
       const nextTasks = (await store.get(KEY_TASKS)) || defaultTasks()
       return json(res, {
         ok: true,
-        routine: nextRoutine,
         tasks: nextTasks,
         storageConfigured: true,
         store: store.kind,

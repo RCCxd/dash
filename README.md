@@ -9,12 +9,12 @@ Aplicação Web (SPA) para substituir planilhas: **tarefas** e **rotina semanal*
 - Lucide-React (ícones)
 - Persistência por usuário: React Context + `localStorage`
 - Backend (API): Vercel Functions (`/api/*`)
-- Persistência global (tarefas/rotina): Redis (Upstash via Vercel Marketplace)
+- Persistência global (tarefas): Redis (Upstash via Vercel Marketplace)
 
 ## Funcionalidades
 
 - **Dashboard & Tarefas**: tarefas globais (criadas pelo admin) + tarefas pessoais (editáveis) + filtros + cada usuário marca como concluída no próprio dispositivo.
-- **Rotina**: grade semanal + chat com IA que gera um plano estruturado e, ao salvar, preenche sua grade (seus itens são editáveis).
+- **Rotina**: grade semanal manual e local (cada pessoa monta a própria rotina no dispositivo).
 - **Configurações**: tema (Marista/Claro/Escuro/Personalizado com HEX), fonte, contraste e outras opções.
 - **Admin (no site)**: em **Configurações**, defina a senha do admin para liberar o menu **Admin** e gerenciar/importar/exportar tarefas globais. Se `ADMIN_PASSWORD` estiver configurada no backend, a senha deve bater com ela.
 
@@ -25,7 +25,7 @@ npm install
 npm run dev
 ```
 
-Observação: `npm run dev` roda apenas o frontend. Para usar **IA** e **dados globais** localmente:
+Observação: `npm run dev` roda apenas o frontend. Para usar **dados globais** localmente:
 
 - Instale o Vercel CLI e rode `vercel dev`.
 
@@ -46,25 +46,16 @@ Se o build falhar com exit `126`, faça redeploy com **Clear build cache** (ou d
 
 ### Variáveis de ambiente (Vercel)
 
-- `OPENAI_API_KEY` (opcional): habilita a IA no endpoint `/api/routine-ai`.
-- `OPENAI_MODEL` (opcional): default `gpt-4o-mini`.
 - `ADMIN_PASSWORD` (opcional): quando definida, bloqueia qualquer `PUT` em `/api/global-data` sem o header `x-admin-password`.
-- `OLLAMA_BASE_URL` (opcional): URL do servidor Ollama para usar IA local (ex: `http://localhost:11434` quando rodando via `vercel dev`).
-- `OLLAMA_MODEL` (opcional): modelo do Ollama (ex: `llama3.1:8b`).
 
 ### Storage global (recomendado)
 
-Conecte um Redis do marketplace (Upstash) para persistir tarefas/rotina globais (para todos). O backend usa estas env vars:
+Conecte um Redis do marketplace (Upstash) para persistir tarefas globais (para todos). O backend usa estas env vars:
 
 - `UPSTASH_REDIS_REST_URL`
 - `UPSTASH_REDIS_REST_TOKEN`
 
 Sem isso, o backend usa um fallback simples em arquivo (no Vercel é em `/tmp`), que pode resetar em cold starts.
-
-### OpenAI key sem env (modo local por dispositivo)
-
-Você pode definir uma **OpenAI API Key local** (por dispositivo) em **Configurações → IA**.
-Essa chave fica no `localStorage` e é enviada no header `x-openai-key` para `/api/routine-ai`.
 
 ## Dados (localStorage)
 
