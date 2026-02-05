@@ -22,7 +22,7 @@ function priorityLabel(priority) {
 
 export default function TaskCard({ task, readOnly = false, onEdit, onDelete, onToggleDone }) {
   const due = formatDueDateLabel(task.dueDate)
-  const priority = priorityLabel(task.priority)
+  const priority = priorityLabel(task.effectivePriority || task.priority)
   const done = task.status === 'done'
   const canToggle = typeof onToggleDone === 'function'
 

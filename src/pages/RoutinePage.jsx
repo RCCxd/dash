@@ -5,21 +5,40 @@ import { newId } from '../utils/ids.js'
 import { formatWeekdayShort } from '../utils/week.js'
 
 const DAYS = [0, 1, 2, 3, 4, 5, 6]
-const HOURS = Array.from({ length: 17 }, (_, i) => i + 6) // 06..22
+const DEFAULT_START_HOUR = 6
+const DEFAULT_END_HOUR = 22
+const ROW_H_PX = 44
 
 function toMinutes(hhmm) {
   const [h, m] = String(hhmm).split(':').map((x) => Number(x))
   return (h || 0) * 60 + (m || 0)
 }
 
-function minutesToTop(min) {
-  const start = 6 * 60
-  const end = 22 * 60
-  const clamped = Math.max(start, Math.min(end, min))
-  return ((clamped - start) / (end - start)) * 100
+function clamp(min, value, max) {
+  return Math.max(min, Math.min(max, value))
 }
 
 function RoutineGrid({ events }) {
+  const range = useMemo(() => {
+    let startMin = DEFAULT_START_HOUR * 60
+    let endMin = DEFAULT_END_HOUR * 60
+
+    for (const e of events || []) {
+      const start = toMinutes(e?.start)
+      const end = toMinutes(e?.end)
+      if (Number.isFinite(start)) startMin = Math.min(startMin, Math.floor(start / 60) * 60)
+      if (Number.isFinite(end)) endMin = Math.max(endMin, Math.ceil(end / 60) * 60)
+    }
+
+    startMin = clamp(0, startMin, 24 * 60)
+    endMin = clamp(0, Math.max(startMin + 60, endMin), 24 * 60)
+
+    const hours = []
+    for (let m = startMin; m < endMin; m += 60) hours.push(Math.floor(m / 60))
+
+    return { startMin, endMin, hours }
+  }, [events])
+
   const byDay = useMemo(() => {
     const map = new Map()
     for (const d of DAYS) map.set(d, [])
@@ -38,20 +57,20 @@ function RoutineGrid({ events }) {
 
   return (
     <div className="overflow-hidden rounded-2xl border border-app bg-surface">
-      <div className="grid grid-cols-[56px_repeat(7,minmax(120px,1fr))] border-b border-app">
+      <div className="grid grid-cols-[56px_repeat(7,minmax(110px,1fr))] border-b border-app md:grid-cols-[56px_repeat(7,minmax(0,1fr))]">
         <div className="p-2 text-xs text-muted">Hora</div>
         {DAYS.map((d) => (
-          <div key={d} className="border-l border-app p-2 text-xs text-app">
+          <div key={d} className="border-l border-app p-2 text-[11px] text-app md:text-xs">
             {formatWeekdayShort(d)}
           </div>
         ))}
       </div>
 
       <div className="relative">
-        <div className="grid grid-cols-[56px_repeat(7,minmax(120px,1fr))]">
+        <div className="grid grid-cols-[56px_repeat(7,minmax(110px,1fr))] md:grid-cols-[56px_repeat(7,minmax(0,1fr))]">
           <div className="border-r border-app">
-            {HOURS.map((h) => (
-              <div key={h} className="h-10 border-b border-app p-2 text-xs text-muted">
+            {range.hours.map((h) => (
+              <div key={h} className="h-11 border-b border-app p-2 text-xs text-muted">
                 {String(h).padStart(2, '0')}:00
               </div>
             ))}
@@ -59,21 +78,22 @@ function RoutineGrid({ events }) {
 
           {DAYS.map((d) => (
             <div key={d} className="relative border-l border-app">
-              {HOURS.map((h) => (
-                <div key={h} className="h-10 border-b border-app" />
+              {range.hours.map((h) => (
+                <div key={h} className="h-11 border-b border-app" />
               ))}
 
               {(byDay.get(d) || []).map((e) => {
                 const start = toMinutes(e.start)
                 const end = toMinutes(e.end)
-                const top = minutesToTop(start)
-                const bottom = minutesToTop(end)
-                const height = Math.max(2, bottom - top)
+                const clampedStart = clamp(range.startMin, start, range.endMin)
+                const clampedEnd = clamp(range.startMin, Math.max(end, start + 15), range.endMin)
+                const top = ((clampedStart - range.startMin) / 60) * ROW_H_PX
+                const height = Math.max(18, ((clampedEnd - clampedStart) / 60) * ROW_H_PX)
                 return (
                   <div
                     key={e.id}
-                    className="absolute left-2 right-2 overflow-hidden rounded-xl border border-app bg-surface2 px-2 py-1 text-xs text-app"
-                    style={{ top: `${top}%`, height: `${height}%` }}
+                    className="absolute left-1 right-1 overflow-hidden rounded-xl border border-app bg-surface2 px-2 py-1 text-xs text-app"
+                    style={{ top, height }}
                     title={`${e.title} (${e.start}-${e.end})`}
                   >
                     <div className="truncate font-medium">{e.title}</div>
@@ -203,8 +223,8 @@ export default function RoutinePage() {
 
       <div className="mt-4">
         <div className="mb-2 text-xs font-medium text-muted">Grade semanal</div>
-        <div className="overflow-auto rounded-2xl">
-          <div className="min-w-[960px]">
+        <div className="overflow-x-auto rounded-2xl md:overflow-x-visible">
+          <div className="min-w-[960px] md:min-w-0">
             <RoutineGrid events={myEventsSorted} />
           </div>
         </div>

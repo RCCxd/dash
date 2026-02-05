@@ -37,11 +37,11 @@ export default function AppShell({ children }) {
       <div className="mx-auto flex w-full max-w-5xl">
         <aside className="hidden w-64 shrink-0 border-r border-app px-4 py-6 md:block">
           <div className="text-sm font-semibold tracking-tight text-app">
-            Dashboard do Estudante
+            Tarefas do Estudante
           </div>
           <p className="mt-1 text-xs text-muted">Tarefas e rotina.</p>
           <nav className="mt-5 space-y-1">
-            <NavItem to="/" icon={LayoutDashboard} label="Dashboard & Tarefas" />
+            <NavItem to="/" icon={LayoutDashboard} label="Tarefas" />
             <NavItem to="/rotina" icon={CalendarCheck2} label="Rotina" />
             <NavItem to="/configuracoes" icon={Settings} label="Configurações" />
             {isAdmin ? <NavItem to="/admin" icon={Shield} label="Admin" /> : null}

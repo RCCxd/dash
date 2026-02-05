@@ -3,6 +3,7 @@ import { GlobalDataContext } from './globalDataContext.js'
 import { getStoredJSON, setStoredJSON } from '../../utils/storage.js'
 
 const ADMIN_PASSWORD_KEY = 'studentDashboard.adminPassword.v1'
+const ADMIN_PASSWORD_SESSION_KEY = 'studentDashboard.adminPassword.session.v1'
 
 function localDefaults() {
   return {
@@ -14,6 +15,24 @@ function normalizeEnvelope(envelope) {
   if (!envelope || typeof envelope !== 'object') return { tasks: [] }
   const tasks = Array.isArray(envelope.tasks) ? envelope.tasks : []
   return { ...envelope, tasks }
+}
+
+function getSessionJSON(key, fallback) {
+  try {
+    const raw = sessionStorage.getItem(key)
+    if (!raw) return fallback
+    return JSON.parse(raw)
+  } catch {
+    return fallback
+  }
+}
+
+function setSessionJSON(key, value) {
+  try {
+    sessionStorage.setItem(key, JSON.stringify(value))
+  } catch {
+    // ignore
+  }
 }
 
 function globalTasksUrl() {
@@ -32,26 +51,91 @@ async function loadGlobalTasksFromJson() {
   return normalizeEnvelope(data)
 }
 
+async function tryLoadGlobalTasksFromApi(adminPassword) {
+  const headers = {}
+  if (adminPassword && String(adminPassword).trim()) headers['x-admin-password'] = String(adminPassword).trim()
+
+  const resp = await fetch('/api/global-data', { cache: 'no-store', headers })
+  if (resp.status === 404) return null
+
+  const data = await resp.json().catch(() => null)
+  if (!resp.ok) {
+    const msg = data?.error || `Falha ao carregar /api/global-data (HTTP ${resp.status}).`
+    throw new Error(msg)
+  }
+  if (!data?.ok) throw new Error(data?.error || 'Falha ao carregar dados globais (API).')
+
+  return {
+    envelope: normalizeEnvelope(data.tasks),
+    storageConfigured: Boolean(data.storageConfigured),
+    storeKind: data.store || 'api',
+    authRequired: Boolean(data.authRequired),
+    adminOk: Boolean(data.adminOk),
+  }
+}
+
+async function saveGlobalTasksToApi(nextEnvelope, adminPassword) {
+  const headers = { 'content-type': 'application/json; charset=utf-8' }
+  if (adminPassword && String(adminPassword).trim()) headers['x-admin-password'] = String(adminPassword).trim()
+
+  const resp = await fetch('/api/global-data', {
+    method: 'PUT',
+    headers,
+    body: JSON.stringify({ tasks: nextEnvelope }),
+  })
+
+  const data = await resp.json().catch(() => null)
+  if (!resp.ok || !data?.ok) {
+    const msg = data?.error || `Falha ao salvar /api/global-data (HTTP ${resp.status}).`
+    throw new Error(msg)
+  }
+
+  return {
+    envelope: normalizeEnvelope(data.tasks),
+    storageConfigured: Boolean(data.storageConfigured),
+    storeKind: data.store || 'api',
+    authRequired: Boolean(data.authRequired),
+    adminOk: Boolean(data.adminOk),
+  }
+}
+
 export function GlobalDataProvider({ children }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [tasks, setTasks] = useState(null)
-  const [adminPassword, setAdminPassword] = useState(() => getStoredJSON(ADMIN_PASSWORD_KEY, ''))
+  const [adminPassword, setAdminPassword] = useState(() => {
+    const session = getSessionJSON(ADMIN_PASSWORD_SESSION_KEY, '')
+    if (session && String(session).trim()) return session
+    return getStoredJSON(ADMIN_PASSWORD_KEY, '')
+  })
   const [authRequired, setAuthRequired] = useState(false)
   const [adminOk, setAdminOk] = useState(false)
   const [storageConfigured, setStorageConfigured] = useState(true)
   const [storeKind, setStoreKind] = useState('tarefas-globais.json')
+  const [source, setSource] = useState('json')
 
   const reload = useCallback(async () => {
     setLoading(true)
     setError('')
     try {
+      const fromApi = await tryLoadGlobalTasksFromApi(adminPassword)
+      if (fromApi) {
+        setTasks(fromApi.envelope)
+        setStorageConfigured(fromApi.storageConfigured)
+        setStoreKind(fromApi.storeKind)
+        setAuthRequired(fromApi.authRequired)
+        setAdminOk(fromApi.adminOk)
+        setSource('api')
+        return
+      }
+
       const loaded = await loadGlobalTasksFromJson()
       setTasks(loaded)
       setStorageConfigured(true)
       setStoreKind('tarefas-globais.json')
       setAuthRequired(false)
       setAdminOk(true)
+      setSource('json')
     } catch (e) {
       const fallback = localDefaults()
       setTasks(fallback.tasks)
@@ -59,20 +143,32 @@ export function GlobalDataProvider({ children }) {
       setStoreKind('tarefas-globais.json')
       setAuthRequired(false)
       setAdminOk(false)
+      setSource('json')
       setError(
-        `${e?.message || String(e)} (usando defaults locais — confira se existe public/tarefas-globais.json)`,
+        `${e?.message || String(e)} (usando defaults locais â€” confira se existe public/tarefas-globais.json)`,
       )
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [adminPassword])
 
   useEffect(() => {
     reload()
   }, [reload])
 
   useEffect(() => {
-    setStoredJSON(ADMIN_PASSWORD_KEY, adminPassword || '')
+    if (adminPassword && String(adminPassword).trim()) {
+      setSessionJSON(ADMIN_PASSWORD_SESSION_KEY, adminPassword)
+    } else {
+      try {
+        sessionStorage.removeItem(ADMIN_PASSWORD_SESSION_KEY)
+      } catch {
+        // ignore
+      }
+    }
+
+    // evita persistir senha no localStorage (migração/back-compat)
+    setStoredJSON(ADMIN_PASSWORD_KEY, '')
   }, [adminPassword])
 
   const api = useMemo(() => {
@@ -84,20 +180,34 @@ export function GlobalDataProvider({ children }) {
       setAdminPassword,
       storageConfigured,
       storeKind,
+      source,
       authRequired,
       adminOk,
-      isAdmin: authRequired ? Boolean(adminOk) : Boolean(adminPassword && String(adminPassword).trim()),
+      isAdmin:
+        source === 'api'
+          ? !authRequired || Boolean(adminOk)
+          : Boolean(adminPassword && String(adminPassword).trim()),
       reload,
       async updateGlobalTasks(nextTasks) {
         const normalized = normalizeEnvelope(nextTasks)
+
+        if (source === 'api') {
+          const saved = await saveGlobalTasksToApi(normalized, adminPassword)
+          setTasks(saved.envelope)
+          setStorageConfigured(saved.storageConfigured)
+          setStoreKind(saved.storeKind)
+          setAuthRequired(saved.authRequired)
+          setAdminOk(saved.adminOk)
+          return saved.envelope
+        }
+
         setTasks(normalized)
         setAuthRequired(false)
         setAdminOk(true)
         return normalized
       },
     }
-  }, [adminPassword, adminOk, authRequired, error, loading, reload, tasks, storageConfigured, storeKind])
+  }, [adminOk, adminPassword, authRequired, error, loading, reload, source, storageConfigured, storeKind, tasks])
 
   return <GlobalDataContext.Provider value={api}>{children}</GlobalDataContext.Provider>
 }
-

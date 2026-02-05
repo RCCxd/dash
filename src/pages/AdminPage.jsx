@@ -53,6 +53,7 @@ export default function AdminPage() {
     adminOk,
     storageConfigured,
     storeKind,
+    source,
     adminPassword,
     setAdminPassword,
   } = useGlobalData()
@@ -248,16 +249,18 @@ export default function AdminPage() {
       <div className="mt-4 rounded-2xl border border-app bg-surface p-4">
         <div className="text-sm font-semibold text-app">Senha do admin</div>
         <p className="mt-1 text-xs text-muted">
-          {authRequired
-            ? 'Digite a senha configurada em ADMIN_PASSWORD no backend (somente ela libera salvar/importar).'
-            : 'Digite qualquer senha para desbloquear o admin neste dispositivo.'}
+          {source === 'api'
+            ? authRequired
+              ? 'Digite a senha configurada em ADMIN_PASSWORD no backend (somente ela libera salvar/importar).'
+              : 'Backend sem senha (ADMIN_PASSWORD não configurada).'
+            : 'Digite uma senha para desbloquear o admin neste navegador (somente nesta sessão).'}
         </p>
         <div className="mt-3 flex items-center gap-2">
           <input
             type="password"
             value={adminPassword || ''}
             onChange={(e) => setAdminPassword(e.target.value)}
-            placeholder={authRequired ? 'Senha do admin' : 'Qualquer senha'}
+            placeholder={source === 'api' && authRequired ? 'Senha do admin' : 'Senha'}
             className="h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
           />
           {isAdmin ? (

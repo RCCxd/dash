@@ -96,6 +96,8 @@ export default function SettingsPage() {
     isAdmin,
     adminPassword,
     setAdminPassword,
+    authRequired,
+    source,
     storageConfigured,
     storeKind,
   } = useGlobalData()
@@ -200,7 +202,7 @@ export default function SettingsPage() {
 
             <label className="rounded-2xl border border-app bg-surface p-4">
               <div className="text-sm font-semibold text-app">Filtro padrão (tarefas)</div>
-              <p className="mt-1 text-xs text-muted">Ao abrir o Dashboard.</p>
+              <p className="mt-1 text-xs text-muted">Ao abrir Tarefas.</p>
               <select
                 value={settings.defaultTaskFilter}
                 onChange={(e) => updateSettings({ defaultTaskFilter: e.target.value })}
@@ -236,14 +238,18 @@ export default function SettingsPage() {
           <div className="rounded-2xl border border-app bg-surface p-4">
             <div className="text-sm font-semibold text-app">Senha do admin</div>
             <p className="mt-1 text-xs text-muted">
-              Digite qualquer senha para desbloquear o menu &quot;Admin&quot; neste dispositivo.
+              {source === 'api'
+                ? authRequired
+                  ? 'Digite a senha configurada em ADMIN_PASSWORD no backend.'
+                  : 'Backend sem senha (ADMIN_PASSWORD não configurada).'
+                : 'Digite uma senha para liberar o menu "Admin" neste navegador (somente nesta sessão).'}
             </p>
             <div className="mt-3 flex items-center gap-2">
               <input
                 type="password"
                 value={adminPassword || ''}
                 onChange={(e) => setAdminPassword(e.target.value)}
-                placeholder="Qualquer senha"
+                placeholder={source === 'api' && authRequired ? 'Senha do admin' : 'Senha'}
                 className="h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
               />
               {isAdmin ? (

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Plus, SearchX, X } from 'lucide-react'
+import { ChevronLeft, Plus, SearchX, X } from 'lucide-react'
 import { useTasks } from '../state/tasks/tasksContext.js'
 import { useSettings } from '../state/settings/settingsContext.js'
 import TaskCard from '../ui/TaskCard.jsx'
@@ -10,15 +10,36 @@ const FILTERS = [
   { key: 'done', label: 'Concluídas' },
 ]
 
+const VIEWS = [
+  { key: 'subjects', label: 'Matérias' },
+  { key: 'upcoming', label: 'Próximas' },
+]
+
 const PRIORITIES = [
   { value: 'high', label: 'Alta' },
   { value: 'medium', label: 'Média' },
   { value: 'low', label: 'Baixa' },
 ]
 
+function subjectKey(subject) {
+  const s = String(subject || '').trim()
+  return s ? s : '__none__'
+}
+
+function subjectLabel(key) {
+  return key === '__none__' ? 'Sem matéria' : key
+}
+
+function isValidIsoDate(dueDate) {
+  return Boolean(dueDate && /^\d{4}-\d{2}-\d{2}$/.test(String(dueDate)))
+}
+
 export default function DashboardPage() {
   const { tasks, setTaskStatus, addUserTask, updateUserTask, deleteUserTask } = useTasks()
   const { settings } = useSettings()
+
+  const [view, setView] = useState('subjects')
+  const [activeSubject, setActiveSubject] = useState(null)
   const [filter, setFilter] = useState(() => settings.defaultTaskFilter || 'pending')
   const [editorOpen, setEditorOpen] = useState(false)
   const [editing, setEditing] = useState(null)
@@ -30,15 +51,75 @@ export default function DashboardPage() {
     priority: 'medium',
   })
 
-  const filteredTasks = useMemo(() => {
-    if (filter === 'all') return tasks
-    if (filter === 'pending') return tasks.filter((t) => t.status !== 'done')
-    return tasks.filter((t) => t.status === 'done')
-  }, [tasks, filter])
+  const subjects = useMemo(() => {
+    const map = new Map()
+    for (const t of tasks) {
+      const key = subjectKey(t.subject)
+      const prev = map.get(key) || {
+        key,
+        label: subjectLabel(key),
+        tasks: [],
+        pending: 0,
+        done: 0,
+        nextDue: '9999-12-31',
+      }
 
-  function openNew() {
+      prev.tasks.push(t)
+      if (t.status === 'done') prev.done += 1
+      else prev.pending += 1
+
+      if (t.status !== 'done' && isValidIsoDate(t.dueDate) && t.dueDate < prev.nextDue) {
+        prev.nextDue = t.dueDate
+      }
+
+      map.set(key, prev)
+    }
+
+    return [...map.values()].sort((a, b) => {
+      if (a.nextDue < b.nextDue) return -1
+      if (a.nextDue > b.nextDue) return 1
+      if (b.pending !== a.pending) return b.pending - a.pending
+      return String(a.label).localeCompare(String(b.label))
+    })
+  }, [tasks])
+
+  const activeSubjectInfo = useMemo(() => {
+    if (!activeSubject) return null
+    return subjects.find((s) => s.key === activeSubject) || null
+  }, [activeSubject, subjects])
+
+  const visibleTasks = useMemo(() => {
+    const base = activeSubjectInfo?.tasks || []
+    if (filter === 'all') return base
+    if (filter === 'pending') return base.filter((t) => t.status !== 'done')
+    return base.filter((t) => t.status === 'done')
+  }, [activeSubjectInfo, filter])
+
+  const upcomingTasks = useMemo(() => {
+    const pendingWithDue = tasks
+      .filter((t) => t.status !== 'done' && isValidIsoDate(t.dueDate))
+      .sort((a, b) => {
+        if (a.dueDate < b.dueDate) return -1
+        if (a.dueDate > b.dueDate) return 1
+        return String(a.title || '').localeCompare(String(b.title || ''))
+      })
+
+    const pendingNoDue = tasks
+      .filter((t) => t.status !== 'done' && !isValidIsoDate(t.dueDate))
+      .sort((a, b) => String(a.title || '').localeCompare(String(b.title || '')))
+
+    return { withDue: pendingWithDue, noDue: pendingNoDue }
+  }, [tasks])
+
+  function openNew(presetSubject) {
     setEditing(null)
-    setForm({ subject: '', title: '', description: '', dueDate: '', priority: 'medium' })
+    setForm({
+      subject: String(presetSubject || '').trim(),
+      title: '',
+      description: '',
+      dueDate: '',
+      priority: 'medium',
+    })
     setEditorOpen(true)
   }
 
@@ -82,18 +163,21 @@ export default function DashboardPage() {
     closeEditor()
   }
 
+  function goSubjectsRoot() {
+    setActiveSubject(null)
+    setView('subjects')
+  }
+
   return (
     <div className="mx-auto w-full max-w-3xl px-4 pb-24 pt-4 md:pb-6">
       <div className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-lg font-semibold tracking-tight text-app md:text-xl">
-            Dashboard & Tarefas
-          </h1>
-          <p className="mt-1 text-sm text-muted">Acompanhe suas entregas sem planilha.</p>
+        <div className="min-w-0">
+          <h1 className="text-lg font-semibold tracking-tight text-app md:text-xl">Tarefas</h1>
+          <p className="mt-1 text-sm text-muted">Organize por matéria e acompanhe prazos.</p>
         </div>
         <button
           type="button"
-          onClick={openNew}
+          onClick={() => openNew(activeSubjectInfo?.key && activeSubjectInfo.key !== '__none__' ? activeSubjectInfo.label : '')}
           className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium btn-primary"
         >
           <Plus className="h-4 w-4" />
@@ -102,59 +186,186 @@ export default function DashboardPage() {
       </div>
 
       <div className="mt-4 flex gap-2">
-        {FILTERS.map((f) => {
-          const active = f.key === filter
+        {VIEWS.map((v) => {
+          const active = v.key === view
           return (
             <button
-              key={f.key}
+              key={v.key}
               type="button"
-              onClick={() => setFilter(f.key)}
+              onClick={() => {
+                setView(v.key)
+                if (v.key !== 'subjects') setActiveSubject(null)
+              }}
               className={[
                 'rounded-full border px-3 py-1.5 text-sm',
                 'transition-colors',
-                active
-                  ? 'border-app bg-surface2 text-app'
-                  : 'border-app bg-surface text-muted hover:bg-surface2',
+                active ? 'border-app bg-surface2 text-app' : 'border-app bg-surface text-muted hover:bg-surface2',
               ].join(' ')}
             >
-              {f.label}
+              {v.label}
             </button>
           )
         })}
       </div>
 
-      <div className="mt-4 space-y-3">
-        {filteredTasks.length === 0 ? (
-          <div className="rounded-2xl border border-app bg-surface p-5 text-center">
-            <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-surface2">
-              <SearchX className="h-5 w-5 text-muted" />
+      {view === 'subjects' ? (
+        <div className="mt-4 space-y-4">
+          {activeSubjectInfo ? (
+            <>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <button
+                  type="button"
+                  onClick={goSubjectsRoot}
+                  className="inline-flex items-center gap-2 rounded-xl border border-app bg-surface px-3 py-2 text-sm text-app hover:bg-surface2"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Matérias
+                </button>
+
+                <div className="min-w-0 text-sm font-semibold text-app">{activeSubjectInfo.label}</div>
+              </div>
+
+              <div className="flex gap-2">
+                {FILTERS.map((f) => {
+                  const active = f.key === filter
+                  return (
+                    <button
+                      key={f.key}
+                      type="button"
+                      onClick={() => setFilter(f.key)}
+                      className={[
+                        'rounded-full border px-3 py-1.5 text-sm',
+                        'transition-colors',
+                        active
+                          ? 'border-app bg-surface2 text-app'
+                          : 'border-app bg-surface text-muted hover:bg-surface2',
+                      ].join(' ')}
+                    >
+                      {f.label}
+                    </button>
+                  )
+                })}
+              </div>
+
+              <div className="space-y-3">
+                {visibleTasks.length === 0 ? (
+                  <div className="rounded-2xl border border-app bg-surface p-5 text-center">
+                    <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-surface2">
+                      <SearchX className="h-5 w-5 text-muted" />
+                    </div>
+                    <p className="mt-3 text-sm text-app">Nada por aqui.</p>
+                    <p className="mt-1 text-xs text-muted">
+                      Clique em "Nova tarefa" para criar uma tarefa pessoal (editável).
+                    </p>
+                  </div>
+                ) : (
+                  visibleTasks.map((task) => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      readOnly={task.source !== 'user'}
+                      onEdit={task.source === 'user' ? () => openEdit(task) : undefined}
+                      onDelete={task.source === 'user' ? () => deleteUserTask(task.id) : undefined}
+                      onToggleDone={(done) => setTaskStatus(task.id, done ? 'done' : 'pending')}
+                    />
+                  ))
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              {subjects.length === 0 ? (
+                <div className="rounded-2xl border border-app bg-surface p-5 text-center md:col-span-2">
+                  <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-surface2">
+                    <SearchX className="h-5 w-5 text-muted" />
+                  </div>
+                  <p className="mt-3 text-sm text-app">Nenhuma tarefa ainda.</p>
+                  <p className="mt-1 text-xs text-muted">Clique em "Nova tarefa" para começar.</p>
+                </div>
+              ) : (
+                subjects.map((s) => (
+                  <button
+                    key={s.key}
+                    type="button"
+                    onClick={() => setActiveSubject(s.key)}
+                    className="rounded-2xl border border-app bg-surface p-4 text-left transition-colors hover:bg-surface2"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="truncate text-sm font-semibold text-app">{s.label}</div>
+                        <div className="mt-1 text-xs text-muted">
+                          {s.pending} pendente{s.pending === 1 ? '' : 's'} • {s.done} concluída
+                          {s.done === 1 ? '' : 's'}
+                        </div>
+                      </div>
+                      {s.nextDue !== '9999-12-31' ? (
+                        <div className="shrink-0 rounded-full border border-app bg-surface px-2 py-0.5 text-xs text-muted">
+                          Próxima: {s.nextDue.split('-').reverse().join('/')}
+                        </div>
+                      ) : null}
+                    </div>
+                  </button>
+                ))
+              )}
             </div>
-            <p className="mt-3 text-sm text-app">Nada por aqui.</p>
-            <p className="mt-1 text-xs text-muted">
-              Clique em "Nova tarefa" para criar uma tarefa pessoal (editável).
-            </p>
+          )}
+        </div>
+      ) : (
+        <div className="mt-4 space-y-4">
+          <div className="rounded-2xl border border-app bg-surface p-4">
+            <div className="text-sm font-semibold text-app">Mais perto da entrega</div>
+            <p className="mt-1 text-xs text-muted">Pendentes com data ordenadas por prazo.</p>
           </div>
-        ) : (
-          filteredTasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              readOnly={task.source !== 'user'}
-              onEdit={task.source === 'user' ? () => openEdit(task) : undefined}
-              onDelete={task.source === 'user' ? () => deleteUserTask(task.id) : undefined}
-              onToggleDone={(done) => setTaskStatus(task.id, done ? 'done' : 'pending')}
-            />
-          ))
-        )}
-      </div>
+
+          <div className="space-y-3">
+            {upcomingTasks.withDue.length === 0 ? (
+              <div className="rounded-2xl border border-app bg-surface p-5 text-center">
+                <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-surface2">
+                  <SearchX className="h-5 w-5 text-muted" />
+                </div>
+                <p className="mt-3 text-sm text-app">Sem prazos por enquanto.</p>
+                <p className="mt-1 text-xs text-muted">Adicione datas de entrega nas tarefas para aparecer aqui.</p>
+              </div>
+            ) : (
+              upcomingTasks.withDue.slice(0, 30).map((task) => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  readOnly={task.source !== 'user'}
+                  onEdit={task.source === 'user' ? () => openEdit(task) : undefined}
+                  onDelete={task.source === 'user' ? () => deleteUserTask(task.id) : undefined}
+                  onToggleDone={(done) => setTaskStatus(task.id, done ? 'done' : 'pending')}
+                />
+              ))
+            )}
+          </div>
+
+          {upcomingTasks.noDue.length ? (
+            <div className="rounded-2xl border border-app bg-surface p-4">
+              <div className="text-sm font-semibold text-app">Sem data</div>
+              <p className="mt-1 text-xs text-muted">Também pendentes, mas sem prazo definido.</p>
+              <div className="mt-3 space-y-3">
+                {upcomingTasks.noDue.slice(0, 10).map((task) => (
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    readOnly={task.source !== 'user'}
+                    onEdit={task.source === 'user' ? () => openEdit(task) : undefined}
+                    onDelete={task.source === 'user' ? () => deleteUserTask(task.id) : undefined}
+                    onToggleDone={(done) => setTaskStatus(task.id, done ? 'done' : 'pending')}
+                  />
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      )}
 
       {editorOpen ? (
         <div className="fixed inset-0 z-30 flex items-end justify-center bg-black/40 p-4 md:items-center">
           <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-app bg-surface shadow-xl">
             <div className="flex items-center justify-between border-b border-app px-4 py-3">
-              <div className="text-sm font-semibold text-app">
-                {editing ? 'Editar tarefa' : 'Nova tarefa'}
-              </div>
+              <div className="text-sm font-semibold text-app">{editing ? 'Editar tarefa' : 'Nova tarefa'}</div>
               <button
                 type="button"
                 onClick={closeEditor}

@@ -33,6 +33,37 @@ function sortTasks(list) {
   })
 }
 
+function priorityRank(p) {
+  if (p === 'high') return 3
+  if (p === 'medium') return 2
+  return 1
+}
+
+function maxPriority(a, b) {
+  return priorityRank(a) >= priorityRank(b) ? a : b
+}
+
+function dueBoostPriority(priority, dueDate) {
+  const base = priority === 'high' || priority === 'low' ? priority : 'medium'
+  if (!dueDate) return base
+
+  const [y, m, d] = String(dueDate).split('-').map((x) => Number(x))
+  if (!y || !m || !d) return base
+
+  const due = new Date(y, m - 1, d)
+  const today = new Date()
+  const t = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()
+  const du = new Date(due.getFullYear(), due.getMonth(), due.getDate()).getTime()
+  const deltaDays = Math.round((du - t) / (24 * 60 * 60 * 1000))
+
+  let duePriority = 'low'
+  if (deltaDays <= 0) duePriority = 'high'
+  else if (deltaDays <= 3) duePriority = 'high'
+  else if (deltaDays <= 7) duePriority = 'medium'
+
+  return maxPriority(base, duePriority)
+}
+
 export function TasksProvider({ children }) {
   const { tasks: globalTasksEnvelope } = useGlobalData()
   const [statusById, setStatusById] = useState(() => {
@@ -60,22 +91,22 @@ export function TasksProvider({ children }) {
     const globalRaw = globalTasksEnvelope?.tasks
     const globalTasks = Array.isArray(globalRaw)
       ? globalRaw.map((t) => {
-          const base = normalizeTask({ ...t, status: 'pending' }, 'global')
-          const local = statusById?.[base.id]
-          const status = local === 'done' ? 'done' : 'pending'
-          return { ...base, status }
-        })
-      : []
+           const base = normalizeTask({ ...t, status: 'pending' }, 'global')
+           const local = statusById?.[base.id]
+           const status = local === 'done' ? 'done' : 'pending'
+           return { ...base, status, effectivePriority: dueBoostPriority(base.priority, base.dueDate) }
+         })
+       : []
 
     const userRaw = userTasksEnvelope?.tasks
     const userTasks = Array.isArray(userRaw)
       ? userRaw.map((t) => {
-          const base = normalizeTask({ ...t, status: 'pending' }, 'user')
-          const local = statusById?.[base.id]
-          const status = local === 'done' ? 'done' : 'pending'
-          return { ...base, status }
-        })
-      : []
+           const base = normalizeTask({ ...t, status: 'pending' }, 'user')
+           const local = statusById?.[base.id]
+           const status = local === 'done' ? 'done' : 'pending'
+           return { ...base, status, effectivePriority: dueBoostPriority(base.priority, base.dueDate) }
+         })
+       : []
 
     const all = [...globalTasks, ...userTasks]
 
