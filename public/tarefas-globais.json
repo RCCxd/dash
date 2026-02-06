@@ -1,6 +1,26 @@
 {
   "tasks": [
     {
+      "id": "5faa986f-b424-4a50-99b0-fe82a3c1cd71",
+      "subject": "Matemática",
+      "title": "Resumo",
+      "description": "Resumo dos conteúdos dados durante a revisão, equações de primeiro grau, produtos notáveis, sistemas lineares, e equações de segundo grau",
+      "dueDate": "2026-02-11",
+      "priority": "medium",
+      "createdAt": 1770394602372,
+      "updatedAt": 1770394602372
+    },
+    {
+      "id": "8758616e-5e4c-4d46-8c50-f3e2307f3d3a",
+      "subject": "Matemática",
+      "title": "Lista de Exercícios 3",
+      "description": "Lista sobre Equações de Segundo Grau, brinquem com ela",
+      "dueDate": "2026-02-11",
+      "priority": "medium",
+      "createdAt": 1770394531023,
+      "updatedAt": 1770394531023
+    },
+    {
       "id": "a1142fb4-5a3f-4d7d-ba18-c9af46b80c04",
       "subject": "Biologia",
       "title": "Ficha Resumo",
