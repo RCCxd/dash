@@ -8,6 +8,12 @@ function json(res, body, statusCode = 200) {
   res.end(JSON.stringify(body))
 }
 
+function normalizeEnvelope(envelope) {
+  if (!envelope || typeof envelope !== 'object') return { tasks: [] }
+  const tasks = Array.isArray(envelope.tasks) ? envelope.tasks : []
+  return { ...envelope, tasks }
+}
+
 function getConfiguredAdminPassword() {
   const v = process.env.ADMIN_PASSWORD
   return v && String(v).trim() ? String(v).trim() : ''
@@ -31,6 +37,17 @@ function isAdminAuthorized(req) {
 
 function defaultTasks() {
   return { tasks: [] }
+}
+
+async function readPublicGlobalTasksJson() {
+  const file = path.join(process.cwd(), 'public', 'tarefas-globais.json')
+  try {
+    const raw = await fs.readFile(file, 'utf8')
+    const parsed = JSON.parse(raw)
+    return normalizeEnvelope(parsed)
+  } catch {
+    return null
+  }
 }
 
 function safeFilename(key) {
@@ -127,13 +144,16 @@ module.exports = async (req, res) => {
     const method = req.method || 'GET'
     const store = await getStore()
     const adminPasswordConfigured = Boolean(getConfiguredAdminPassword())
+    const storageConfigured = store.kind !== 'file-tmp'
 
     if (method === 'GET') {
-      const tasks = (await store.get(KEY_TASKS)) || defaultTasks()
+      const stored = await store.get(KEY_TASKS)
+      const fromPublic = stored ? null : await readPublicGlobalTasksJson()
+      const tasks = normalizeEnvelope(stored || fromPublic || defaultTasks())
       return json(res, {
         ok: true,
         tasks,
-        storageConfigured: true,
+        storageConfigured,
         store: store.kind,
         authRequired: adminPasswordConfigured,
         adminOk: adminPasswordConfigured ? isAdminAuthorized(req) : true,
@@ -158,11 +178,13 @@ module.exports = async (req, res) => {
 
       if (tasks) await store.set(KEY_TASKS, tasks)
 
-      const nextTasks = (await store.get(KEY_TASKS)) || defaultTasks()
+      const stored = await store.get(KEY_TASKS)
+      const fromPublic = stored ? null : await readPublicGlobalTasksJson()
+      const nextTasks = normalizeEnvelope(stored || fromPublic || defaultTasks())
       return json(res, {
         ok: true,
         tasks: nextTasks,
-        storageConfigured: true,
+        storageConfigured,
         store: store.kind,
         authRequired: adminPasswordConfigured,
         adminOk: adminPasswordConfigured ? isAdminAuthorized(req) : true,

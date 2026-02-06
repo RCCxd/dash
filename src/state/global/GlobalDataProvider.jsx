@@ -119,7 +119,7 @@ export function GlobalDataProvider({ children }) {
     setError('')
     try {
       const fromApi = await tryLoadGlobalTasksFromApi(adminPassword)
-      if (fromApi) {
+      if (fromApi && fromApi.storageConfigured) {
         setTasks(fromApi.envelope)
         setStorageConfigured(fromApi.storageConfigured)
         setStoreKind(fromApi.storeKind)
