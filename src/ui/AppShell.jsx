@@ -1,6 +1,6 @@
 import { createElement } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { CalendarCheck2, LayoutDashboard, Settings, Shield } from 'lucide-react'
+import { BookOpenCheck, CalendarCheck2, LayoutDashboard, Settings, Shield } from 'lucide-react'
 import { useGlobalData } from '../state/global/globalDataContext.js'
 
 function NavItem({ to, icon, label }) {
@@ -29,6 +29,7 @@ export default function AppShell({ children }) {
   const active = location.pathname
   const onDashboard = active === '/'
   const onRoutine = active.startsWith('/rotina')
+  const onHerberthSheets = active.startsWith('/fichas-herberth')
   const onSettings = active.startsWith('/configuracoes')
   const onAdmin = active.startsWith('/admin')
 
@@ -43,6 +44,7 @@ export default function AppShell({ children }) {
           <nav className="mt-5 space-y-1">
             <NavItem to="/" icon={LayoutDashboard} label="Tarefas" />
             <NavItem to="/rotina" icon={CalendarCheck2} label="Rotina" />
+            <NavItem to="/fichas-herberth" icon={BookOpenCheck} label="Fichas de Herberth" />
             <NavItem to="/configuracoes" icon={Settings} label="Configurações" />
             {isAdmin ? <NavItem to="/admin" icon={Shield} label="Admin" /> : null}
           </nav>
@@ -72,6 +74,16 @@ export default function AppShell({ children }) {
           >
             <CalendarCheck2 className="h-5 w-5" />
             Rotina
+          </NavLink>
+          <NavLink
+            to="/fichas-herberth"
+            className={[
+              'flex flex-1 flex-col items-center gap-1 py-3 text-xs',
+              onHerberthSheets ? 'text-app' : 'text-muted',
+            ].join(' ')}
+          >
+            <BookOpenCheck className="h-5 w-5" />
+            Fichas
           </NavLink>
           <NavLink
             to="/configuracoes"
