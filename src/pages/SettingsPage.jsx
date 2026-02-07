@@ -77,13 +77,13 @@ function HexPicker({ label, value, onChange }) {
         />
       </div>
       <div className="mt-2 flex items-center justify-between gap-3">
-        <div className="text-xs text-muted">{normalized ? normalized.toUpperCase() : 'Inválido'}</div>
+        <div className="text-xs text-muted">{normalized ? normalized.toUpperCase() : 'InvÃ¡lido'}</div>
         <div className="inline-flex items-center gap-2 text-xs text-muted">
           <span
             className="h-4 w-4 rounded border border-app"
             style={{ background: normalized || 'transparent' }}
           />
-          Prévia
+          PrÃ©via
         </div>
       </div>
     </label>
@@ -107,9 +107,9 @@ export default function SettingsPage() {
       <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-lg font-semibold tracking-tight text-app md:text-xl">
-            Configurações
+            ConfiguraÃ§Ãµes
           </h1>
-          <p className="mt-1 text-sm text-muted">Ajuste aparência e comportamento do app.</p>
+          <p className="mt-1 text-sm text-muted">Ajuste aparÃªncia e comportamento do app.</p>
         </div>
         <button
           type="button"
@@ -124,14 +124,14 @@ export default function SettingsPage() {
       <div className="mt-4 space-y-4">
         <Section
           icon={Palette}
-          title="Aparência"
+          title="AparÃªncia"
           description="Modo Marista (azul), claro, escuro ou personalizado."
         >
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <ModeButton
               active={settings.themeMode === 'marista'}
               title="Normal (Marista)"
-              subtitle="Azul Marista (padrão)"
+              subtitle="Azul Marista (padrÃ£o)"
               onClick={() => updateSettings({ themeMode: 'marista' })}
             />
             <ModeButton
@@ -143,7 +143,7 @@ export default function SettingsPage() {
             <ModeButton
               active={settings.themeMode === 'dark'}
               title="Escuro"
-              subtitle="Menos brilho à noite"
+              subtitle="Menos brilho Ã  noite"
               onClick={() => updateSettings({ themeMode: 'dark' })}
             />
             <ModeButton
@@ -157,7 +157,7 @@ export default function SettingsPage() {
           {settings.themeMode === 'custom' ? (
             <div className="mt-4 space-y-4">
               <HexPicker
-                label="Cor primária (botões/links)"
+                label="Cor primÃ¡ria (botÃµes/links)"
                 value={settings.customPrimary}
                 onChange={(hex) => updateSettings({ customPrimary: hex })}
               />
@@ -170,21 +170,21 @@ export default function SettingsPage() {
           ) : null}
 
           <div className="mt-4 rounded-2xl border border-app bg-surface p-4">
-            <div className="text-xs font-medium text-muted">Prévia</div>
+            <div className="text-xs font-medium text-muted">PrÃ©via</div>
             <div className="mt-3 rounded-2xl border border-app bg-surface2 p-4">
               <div className="text-sm font-semibold text-app">Card de exemplo</div>
-              <p className="mt-1 text-xs text-muted">Texto secundário e um botão primário.</p>
+              <p className="mt-1 text-xs text-muted">Texto secundÃ¡rio e um botÃ£o primÃ¡rio.</p>
               <button
                 type="button"
                 className="mt-3 rounded-xl px-3 py-2 text-sm font-medium btn-primary"
               >
-                Botão
+                BotÃ£o
               </button>
             </div>
           </div>
         </Section>
 
-        <Section icon={Sliders} title="Opções" description="Preferências de uso do dia a dia.">
+        <Section icon={Sliders} title="OpÃ§Ãµes" description="PreferÃªncias de uso do dia a dia.">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <label className="rounded-2xl border border-app bg-surface p-4">
               <div className="text-sm font-semibold text-app">Fonte</div>
@@ -201,7 +201,7 @@ export default function SettingsPage() {
             </label>
 
             <label className="rounded-2xl border border-app bg-surface p-4">
-              <div className="text-sm font-semibold text-app">Filtro padrão (tarefas)</div>
+              <div className="text-sm font-semibold text-app">Filtro padrÃ£o (tarefas)</div>
               <p className="mt-1 text-xs text-muted">Ao abrir Tarefas.</p>
               <select
                 value={settings.defaultTaskFilter}
@@ -210,13 +210,13 @@ export default function SettingsPage() {
               >
                 <option value="pending">Pendentes</option>
                 <option value="all">Tudo</option>
-                <option value="done">Concluídas</option>
+                <option value="done">ConcluÃ­das</option>
               </select>
             </label>
 
             <label className="rounded-2xl border border-app bg-surface p-4">
               <div className="text-sm font-semibold text-app">Alto contraste</div>
-              <p className="mt-1 text-xs text-muted">Bordas mais visíveis.</p>
+              <p className="mt-1 text-xs text-muted">Bordas mais visÃ­veis.</p>
               <div className="mt-3 flex items-center justify-between gap-3">
                 <span className="text-sm text-app">Ativar</span>
                 <input
@@ -232,7 +232,7 @@ export default function SettingsPage() {
 
         <Section
           icon={Shield}
-          title="Administração"
+          title="AdministraÃ§Ã£o"
           description="Edite e exporte as tarefas globais. Para aplicar para todos, atualize public/tarefas-globais.json (commit + deploy)."
         >
           <div className="rounded-2xl border border-app bg-surface p-4">
@@ -241,15 +241,17 @@ export default function SettingsPage() {
               {source === 'api'
                 ? authRequired
                   ? 'Digite a senha configurada em ADMIN_PASSWORD no backend.'
-                  : 'Backend sem senha (ADMIN_PASSWORD não configurada).'
-                : 'Digite uma senha para liberar o menu "Admin" neste navegador (somente nesta sessão).'}
+                  : 'Backend sem senha (ADMIN_PASSWORD nÃ£o configurada).'
+                : authRequired
+                  ? 'Digite a senha definida em VITE_ADMIN_PASSWORD no frontend.'
+                  : 'Admin local sem senha configurada (defina VITE_ADMIN_PASSWORD).'}
             </p>
             <div className="mt-3 flex items-center gap-2">
               <input
                 type="password"
                 value={adminPassword || ''}
                 onChange={(e) => setAdminPassword(e.target.value)}
-                placeholder={source === 'api' && authRequired ? 'Senha do admin' : 'Senha'}
+                placeholder={authRequired ? 'Senha do admin' : 'Senha'}
                 className="h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
               />
               {isAdmin ? (
@@ -263,15 +265,15 @@ export default function SettingsPage() {
               ) : null}
             </div>
             <div className="mt-2 text-xs text-muted">
-              Base global: {storageConfigured ? storeKind : 'não configurado'}.
+              Base global: {storageConfigured ? storeKind : 'nÃ£o configurado'}.
             </div>
           </div>
 
           <div className="mt-4 rounded-2xl border border-app bg-surface p-4">
             <div className="text-sm font-semibold text-app">Painel do admin</div>
             <p className="mt-1 text-xs text-muted">
-              No painel você adiciona/edita/importa tarefas globais e exporta o JSON. Depois substitua
-              `public/tarefas-globais.json` no repo e dê commit.
+              No painel vocÃª adiciona/edita/importa tarefas globais e exporta o JSON. Depois substitua
+              `public/tarefas-globais.json` no repo e dÃª commit.
             </p>
             <div className="mt-3 flex items-center justify-end">
               <Link

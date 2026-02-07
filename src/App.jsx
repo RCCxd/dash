@@ -5,8 +5,11 @@ import SettingsPage from './pages/SettingsPage.jsx'
 import AdminPage from './pages/AdminPage.jsx'
 import HerberthSheetsPage from './pages/HerberthSheetsPage.jsx'
 import AppShell from './ui/AppShell.jsx'
+import { useGlobalData } from './state/global/globalDataContext.js'
 
 export default function App() {
+  const { isAdmin } = useGlobalData()
+
   return (
     <AppShell>
       <Routes>
@@ -14,7 +17,10 @@ export default function App() {
         <Route path="/rotina" element={<RoutinePage />} />
         <Route path="/fichas-herberth" element={<HerberthSheetsPage />} />
         <Route path="/configuracoes" element={<SettingsPage />} />
-        <Route path="/admin" element={<AdminPage />} />
+        <Route
+          path="/admin"
+          element={isAdmin ? <AdminPage /> : <Navigate to="/configuracoes" replace />}
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AppShell>
