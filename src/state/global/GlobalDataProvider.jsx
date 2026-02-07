@@ -17,17 +17,6 @@ function normalizeEnvelope(envelope) {
   return { ...envelope, tasks }
 }
 
-function getConfiguredLocalAdminPassword() {
-  const value = import.meta?.env?.VITE_ADMIN_PASSWORD
-  return value && String(value).trim() ? String(value).trim() : ''
-}
-
-function isLocalAdminAuthorized(adminPassword) {
-  const configured = getConfiguredLocalAdminPassword()
-  if (!configured) return false
-  return String(adminPassword || '').trim() === configured
-}
-
 function getSessionJSON(key, fallback) {
   try {
     const raw = sessionStorage.getItem(key)
@@ -144,16 +133,16 @@ export function GlobalDataProvider({ children }) {
       setTasks(loaded)
       setStorageConfigured(true)
       setStoreKind('tarefas-globais.json')
-      setAuthRequired(true)
-      setAdminOk(isLocalAdminAuthorized(adminPassword))
+      setAuthRequired(false)
+      setAdminOk(true)
       setSource('json')
     } catch (e) {
       const fallback = localDefaults()
       setTasks(fallback.tasks)
       setStorageConfigured(true)
       setStoreKind('tarefas-globais.json')
-      setAuthRequired(true)
-      setAdminOk(isLocalAdminAuthorized(adminPassword))
+      setAuthRequired(false)
+      setAdminOk(false)
       setSource('json')
       setError(
         `${e?.message || String(e)} (usando defaults locais - confira se existe public/tarefas-globais.json)`,
@@ -183,10 +172,6 @@ export function GlobalDataProvider({ children }) {
   }, [adminPassword])
 
   const api = useMemo(() => {
-    const localAdminOk = isLocalAdminAuthorized(adminPassword)
-    const resolvedAuthRequired = source === 'api' ? authRequired : true
-    const resolvedAdminOk = source === 'api' ? Boolean(adminOk) : localAdminOk
-
     return {
       loading,
       error,
@@ -196,9 +181,12 @@ export function GlobalDataProvider({ children }) {
       storageConfigured,
       storeKind,
       source,
-      authRequired: resolvedAuthRequired,
-      adminOk: resolvedAdminOk,
-      isAdmin: !resolvedAuthRequired || resolvedAdminOk,
+      authRequired,
+      adminOk,
+      isAdmin:
+        source === 'api'
+          ? !authRequired || Boolean(adminOk)
+          : Boolean(adminPassword && String(adminPassword).trim()),
       reload,
       async updateGlobalTasks(nextTasks) {
         const normalized = normalizeEnvelope(nextTasks)
@@ -213,12 +201,8 @@ export function GlobalDataProvider({ children }) {
           return saved.envelope
         }
 
-        if (!localAdminOk) {
-          throw new Error('Nao autorizado no modo local. Configure VITE_ADMIN_PASSWORD e informe a senha correta.')
-        }
-
         setTasks(normalized)
-        setAuthRequired(true)
+        setAuthRequired(false)
         setAdminOk(true)
         return normalized
       },

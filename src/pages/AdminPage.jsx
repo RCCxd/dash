@@ -6,7 +6,7 @@ import { downloadJson } from '../utils/download.js'
 
 const PRIORITIES = [
   { value: 'high', label: 'Alta' },
-  { value: 'medium', label: 'MÃ©dia' },
+  { value: 'medium', label: 'Média' },
   { value: 'low', label: 'Baixa' },
 ]
 
@@ -252,17 +252,15 @@ export default function AdminPage() {
           {source === 'api'
             ? authRequired
               ? 'Digite a senha configurada em ADMIN_PASSWORD no backend (somente ela libera salvar/importar).'
-              : 'Backend sem senha (ADMIN_PASSWORD nÃ£o configurada).'
-            : authRequired
-              ? 'Digite a senha definida em VITE_ADMIN_PASSWORD no frontend.'
-              : 'Admin local sem senha configurada (defina VITE_ADMIN_PASSWORD).'}
+              : 'Backend sem senha (ADMIN_PASSWORD não configurada).'
+            : 'Digite uma senha para desbloquear o admin neste navegador (somente nesta sessão).'}
         </p>
         <div className="mt-3 flex items-center gap-2">
           <input
             type="password"
             value={adminPassword || ''}
             onChange={(e) => setAdminPassword(e.target.value)}
-            placeholder={authRequired ? 'Senha do admin' : 'Senha'}
+            placeholder={source === 'api' && authRequired ? 'Senha do admin' : 'Senha'}
             className="h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
           />
           {isAdmin ? (
@@ -277,17 +275,15 @@ export default function AdminPage() {
         </div>
         {authRequired && adminPassword && !adminOk ? (
           <div className="mt-2 text-xs text-red-200">
-            {source === 'api'
-              ? 'Senha incorreta para este backend. Sem a senha certa vocÃª nÃ£o consegue salvar/importar.'
-              : 'Senha local incorreta. Use o valor definido em VITE_ADMIN_PASSWORD.'}
+            Senha incorreta para este backend. Sem a senha certa você não consegue salvar/importar.
           </div>
         ) : null}
         <div className="mt-2 text-xs text-muted">
-          Base global: {storageConfigured ? storeKind : 'nÃ£o configurado'}.
+          Base global: {storageConfigured ? storeKind : 'não configurado'}.
         </div>
         {!storageConfigured ? (
           <div className="mt-1 text-xs text-muted">
-            Para â€œsalvar para todosâ€, conecte um Redis (Upstash). Sem isso pode resetar.
+            Para "salvar para todos", conecte um Redis (Upstash). Sem isso pode resetar.
           </div>
         ) : null}
       </div>
@@ -310,11 +306,11 @@ export default function AdminPage() {
         <form onSubmit={onAdd} className="mt-4 space-y-3">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <label className="block">
-              <div className="text-xs font-medium text-muted">MatÃ©ria</div>
+              <div className="text-xs font-medium text-muted">Matéria</div>
               <input
                 value={form.subject}
                 onChange={(e) => set('subject', e.target.value)}
-                placeholder="Ex: MatemÃ¡tica"
+                placeholder="Ex: Matemática"
                 className="mt-1 h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
               />
             </label>
@@ -330,22 +326,22 @@ export default function AdminPage() {
           </div>
 
           <label className="block">
-            <div className="text-xs font-medium text-muted">TÃ­tulo *</div>
+            <div className="text-xs font-medium text-muted">Título *</div>
             <input
               value={form.title}
               onChange={(e) => set('title', e.target.value)}
-              placeholder="Ex: Lista de exercÃ­cios 3"
+              placeholder="Ex: Lista de exercícios 3"
               className="mt-1 h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
             />
           </label>
 
           <label className="block">
-            <div className="text-xs font-medium text-muted">DescriÃ§Ã£o</div>
+            <div className="text-xs font-medium text-muted">Descrição</div>
             <textarea
               value={form.description}
               onChange={(e) => set('description', e.target.value)}
               rows={3}
-              placeholder="Detalhes, links, pÃ¡ginas..."
+              placeholder="Detalhes, links, páginas..."
               className="mt-1 w-full resize-none rounded-xl border border-app bg-surface px-3 py-2 text-sm text-app placeholder:text-muted focus:outline-none"
             />
           </label>
@@ -470,11 +466,11 @@ export default function AdminPage() {
             <form onSubmit={onSaveEdit} className="space-y-3 p-4">
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <label className="block">
-                  <div className="text-xs font-medium text-muted">MatÃ©ria</div>
+                  <div className="text-xs font-medium text-muted">Matéria</div>
                   <input
                     value={editForm.subject}
                     onChange={(e) => setEdit('subject', e.target.value)}
-                    placeholder="Ex: MatemÃ¡tica"
+                    placeholder="Ex: Matemática"
                     className="mt-1 h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
                   />
                 </label>
@@ -490,22 +486,22 @@ export default function AdminPage() {
               </div>
 
               <label className="block">
-                <div className="text-xs font-medium text-muted">TÃ­tulo *</div>
+                <div className="text-xs font-medium text-muted">Título *</div>
                 <input
                   value={editForm.title}
                   onChange={(e) => setEdit('title', e.target.value)}
-                  placeholder="Ex: Lista de exercÃ­cios 3"
+                  placeholder="Ex: Lista de exercícios 3"
                   className="mt-1 h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
                 />
               </label>
 
               <label className="block">
-                <div className="text-xs font-medium text-muted">DescriÃ§Ã£o</div>
+                <div className="text-xs font-medium text-muted">Descrição</div>
                 <textarea
                   value={editForm.description}
                   onChange={(e) => setEdit('description', e.target.value)}
                   rows={3}
-                  placeholder="Detalhes, links, pÃ¡ginas..."
+                  placeholder="Detalhes, links, páginas..."
                   className="mt-1 w-full resize-none rounded-xl border border-app bg-surface px-3 py-2 text-sm text-app placeholder:text-muted focus:outline-none"
                 />
               </label>
@@ -535,7 +531,7 @@ export default function AdminPage() {
                     : 'btn-primary',
                 ].join(' ')}
               >
-                Salvar alteraÃ§Ãµes
+                Salvar alterações
               </button>
             </form>
           </div>

@@ -34,7 +34,7 @@ export default function AppShell({ children }) {
   const onAdmin = active.startsWith('/admin')
 
   return (
-    <div className="min-h-full bg-app">
+    <div className="min-h-full bg-app" lang="pt-BR" spellCheck autoCorrect="on">
       <div className="mx-auto flex w-full max-w-5xl">
         <aside className="hidden w-64 shrink-0 border-r border-app px-4 py-6 md:block">
           <div className="text-sm font-semibold tracking-tight text-app">
