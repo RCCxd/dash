@@ -253,7 +253,7 @@ export default function AdminPage() {
             ? authRequired
               ? 'Digite a senha configurada em ADMIN_PASSWORD no backend (somente ela libera salvar/importar).'
               : 'Backend sem senha (ADMIN_PASSWORD não configurada).'
-            : 'Digite uma senha para desbloquear o admin neste navegador (somente nesta sessão).'}
+            : 'Admin requer backend /api/global-data com ADMIN_PASSWORD configurada.'}
         </p>
         <div className="mt-3 flex items-center gap-2">
           <input

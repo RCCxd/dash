@@ -242,7 +242,7 @@ export default function SettingsPage() {
                 ? authRequired
                   ? 'Digite a senha configurada em ADMIN_PASSWORD no backend.'
                   : 'Backend sem senha (ADMIN_PASSWORD não configurada).'
-                : 'Digite uma senha para liberar o menu "Admin" neste navegador (somente nesta sessão).'}
+                : 'Admin requer backend /api/global-data com ADMIN_PASSWORD configurada.'}
             </p>
             <div className="mt-3 flex items-center gap-2">
               <input

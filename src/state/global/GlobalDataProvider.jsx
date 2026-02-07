@@ -119,7 +119,7 @@ export function GlobalDataProvider({ children }) {
     setError('')
     try {
       const fromApi = await tryLoadGlobalTasksFromApi(adminPassword)
-      if (fromApi && fromApi.storageConfigured) {
+      if (fromApi) {
         setTasks(fromApi.envelope)
         setStorageConfigured(fromApi.storageConfigured)
         setStoreKind(fromApi.storeKind)
@@ -134,7 +134,7 @@ export function GlobalDataProvider({ children }) {
       setStorageConfigured(true)
       setStoreKind('tarefas-globais.json')
       setAuthRequired(false)
-      setAdminOk(true)
+      setAdminOk(false)
       setSource('json')
     } catch (e) {
       const fallback = localDefaults()
@@ -183,10 +183,7 @@ export function GlobalDataProvider({ children }) {
       source,
       authRequired,
       adminOk,
-      isAdmin:
-        source === 'api'
-          ? !authRequired || Boolean(adminOk)
-          : Boolean(adminPassword && String(adminPassword).trim()),
+      isAdmin: source === 'api' ? !authRequired || Boolean(adminOk) : false,
       reload,
       async updateGlobalTasks(nextTasks) {
         const normalized = normalizeEnvelope(nextTasks)
@@ -201,10 +198,7 @@ export function GlobalDataProvider({ children }) {
           return saved.envelope
         }
 
-        setTasks(normalized)
-        setAuthRequired(false)
-        setAdminOk(true)
-        return normalized
+        throw new Error('Admin requer backend /api/global-data com ADMIN_PASSWORD configurada.')
       },
     }
   }, [adminOk, adminPassword, authRequired, error, loading, reload, source, storageConfigured, storeKind, tasks])
