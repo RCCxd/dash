@@ -233,16 +233,16 @@ export default function SettingsPage() {
         <Section
           icon={Shield}
           title="Administração"
-          description="Edite e exporte as tarefas globais. Para aplicar para todos, atualize public/tarefas-globais.json (commit + deploy)."
+          description="Não Mexa."
         >
           <div className="rounded-2xl border border-app bg-surface p-4">
             <div className="text-sm font-semibold text-app">Senha do admin</div>
             <p className="mt-1 text-xs text-muted">
               {source === 'api'
                 ? authRequired
-                  ? 'Digite a senha configurada em ADMIN_PASSWORD no backend.'
-                  : 'Backend sem senha (ADMIN_PASSWORD não configurada).'
-                : 'Admin requer backend /api/global-data com ADMIN_PASSWORD configurada.'}
+                  ? 'Digite a senha.'
+                  : 'Backend sem senha.'
+                : 'Admin requer backend.'}
             </p>
             <div className="mt-3 flex items-center gap-2">
               <input
@@ -270,8 +270,7 @@ export default function SettingsPage() {
           <div className="mt-4 rounded-2xl border border-app bg-surface p-4">
             <div className="text-sm font-semibold text-app">Painel do admin</div>
             <p className="mt-1 text-xs text-muted">
-              No painel você adiciona/edita/importa tarefas globais e exporta o JSON. Depois substitua
-              `public/tarefas-globais.json` no repo e dê commit.
+              No painel você adiciona/edita/importa tarefas globais e exporta o JSON.
             </p>
             <div className="mt-3 flex items-center justify-end">
               <Link
