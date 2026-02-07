@@ -65,7 +65,7 @@ export default function HerberthSheetsPage() {
 
   async function onAdd(e) {
     e.preventDefault()
-    if (!isAdmin || !storageConfigured) return
+    if (!isAdmin) return
 
     const title = String(form.title || '').trim()
     const url = normalizeUrl(form.url)
@@ -84,7 +84,7 @@ export default function HerberthSheetsPage() {
   }
 
   async function onDelete(id) {
-    if (!isAdmin || !storageConfigured) return
+    if (!isAdmin) return
     const nextSheets = sheets.filter((item) => item.id !== id)
     await saveSheets(nextSheets)
   }
@@ -99,6 +99,11 @@ export default function HerberthSheetsPage() {
       {isAdmin ? (
         <div className="mt-4 rounded-2xl border border-app bg-surface p-4">
           <div className="text-sm font-semibold text-app">Adicionar link</div>
+          {!storageConfigured ? (
+            <p className="mt-1 text-xs text-muted">
+              Base global não configurada para persistência estável. O salvamento pode ser temporário.
+            </p>
+          ) : null}
           <form onSubmit={onAdd} className="mt-3 space-y-3">
             <label className="block">
               <div className="text-xs font-medium text-muted">Título *</div>
@@ -135,10 +140,10 @@ export default function HerberthSheetsPage() {
 
             <button
               type="submit"
-              disabled={!isAdmin || busy || !storageConfigured}
+              disabled={!isAdmin || busy}
               className={[
                 'inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium',
-                !isAdmin || busy || !storageConfigured
+                !isAdmin || busy
                   ? 'cursor-not-allowed bg-surface2 text-muted'
                   : 'btn-primary',
               ].join(' ')}
@@ -176,11 +181,11 @@ export default function HerberthSheetsPage() {
                 {isAdmin ? (
                   <button
                     type="button"
-                    disabled={busy || !storageConfigured}
+                    disabled={busy}
                     onClick={() => onDelete(item.id)}
                     className={[
                       'inline-flex h-9 w-9 items-center justify-center rounded-xl border border-app bg-surface text-app',
-                      busy || !storageConfigured ? 'cursor-not-allowed opacity-60' : 'hover:bg-surface2',
+                      busy ? 'cursor-not-allowed opacity-60' : 'hover:bg-surface2',
                     ].join(' ')}
                     aria-label="Excluir"
                   >
