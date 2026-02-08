@@ -98,7 +98,7 @@ function RoutineGrid({ events }) {
                   >
                     <div className="truncate font-medium">{e.title}</div>
                     <div className="truncate text-[11px] text-muted">
-                      {e.start}â€“{e.end}
+                      {e.start}-{e.end}
                     </div>
                   </div>
                 )
@@ -268,7 +268,7 @@ export default function RoutinePage() {
                   <div className="min-w-0">
                     <div className="truncate text-sm font-medium text-app">{e.title}</div>
                     <div className="truncate text-xs text-muted">
-                      {formatWeekdayShort(e.day)} {e.start}â€“{e.end}
+                      {formatWeekdayShort(e.day)} {e.start}-{e.end}
                     </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
@@ -326,11 +326,11 @@ export default function RoutinePage() {
 
             <form onSubmit={onSave} className="space-y-3 p-4">
               <label className="block">
-                <div className="text-xs font-medium text-muted">TÃ­tulo *</div>
+                <div className="text-xs font-medium text-muted">Titulo *</div>
                 <input
                   value={form.title}
                   onChange={(e) => set('title', e.target.value)}
-                  placeholder="Ex: Estudar MatemÃ¡tica"
+                  placeholder="Ex: Estudar Matematica"
                   className="mt-1 h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
                 />
               </label>
@@ -352,7 +352,7 @@ export default function RoutinePage() {
                 </label>
 
                 <label className="block">
-                  <div className="text-xs font-medium text-muted">InÃ­cio</div>
+                  <div className="text-xs font-medium text-muted">Inicio</div>
                   <input
                     type="time"
                     value={form.start}

@@ -77,13 +77,13 @@ function HexPicker({ label, value, onChange }) {
         />
       </div>
       <div className="mt-2 flex items-center justify-between gap-3">
-        <div className="text-xs text-muted">{normalized ? normalized.toUpperCase() : 'InvÃ¡lido'}</div>
+        <div className="text-xs text-muted">{normalized ? normalized.toUpperCase() : 'Invalido'}</div>
         <div className="inline-flex items-center gap-2 text-xs text-muted">
           <span
             className="h-4 w-4 rounded border border-app"
             style={{ background: normalized || 'transparent' }}
           />
-          PrÃ©via
+          Previa
         </div>
       </div>
     </label>
@@ -107,9 +107,9 @@ export default function SettingsPage() {
       <div className="dash-enter flex items-start justify-between gap-3">
         <div>
           <h1 className="text-lg font-semibold tracking-tight text-app md:text-xl">
-            ConfiguraÃ§Ãµes
+            Configuracoes
           </h1>
-          <p className="mt-1 text-sm text-muted">Ajuste aparÃªncia e comportamento do app.</p>
+          <p className="mt-1 text-sm text-muted">Ajuste aparencia e comportamento do app.</p>
         </div>
         <button
           type="button"
@@ -125,14 +125,14 @@ export default function SettingsPage() {
         <Section
           delay={40}
           icon={Palette}
-          title="AparÃªncia"
+          title="Aparencia"
           description="Modo Marista (azul), claro, escuro ou personalizado."
         >
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <ModeButton
               active={settings.themeMode === 'marista'}
               title="Normal (Marista)"
-              subtitle="Azul Marista (padrÃ£o)"
+              subtitle="Azul Marista (padrao)"
               onClick={() => updateSettings({ themeMode: 'marista' })}
             />
             <ModeButton
@@ -144,7 +144,7 @@ export default function SettingsPage() {
             <ModeButton
               active={settings.themeMode === 'dark'}
               title="Escuro"
-              subtitle="Menos brilho Ã  noite"
+              subtitle="Menos brilho a noite"
               onClick={() => updateSettings({ themeMode: 'dark' })}
             />
             <ModeButton
@@ -158,7 +158,7 @@ export default function SettingsPage() {
           {settings.themeMode === 'custom' ? (
             <div className="mt-4 space-y-4">
               <HexPicker
-                label="Cor primÃ¡ria (botÃµes/links)"
+                label="Cor primaria (botoes/links)"
                 value={settings.customPrimary}
                 onChange={(hex) => updateSettings({ customPrimary: hex })}
               />
@@ -171,21 +171,21 @@ export default function SettingsPage() {
           ) : null}
 
           <div className="dash-card mt-4 rounded-2xl border border-app bg-surface p-4">
-            <div className="text-xs font-medium text-muted">PrÃ©via</div>
+            <div className="text-xs font-medium text-muted">Previa</div>
             <div className="dash-card mt-3 rounded-2xl border border-app bg-surface2 p-4">
               <div className="text-sm font-semibold text-app">Card de exemplo</div>
-              <p className="mt-1 text-xs text-muted">Texto secundÃ¡rio e um botÃ£o primÃ¡rio.</p>
+              <p className="mt-1 text-xs text-muted">Texto secundario e um botao primario.</p>
               <button
                 type="button"
                 className="dash-tab mt-3 rounded-xl px-3 py-2 text-sm font-medium btn-primary"
               >
-                BotÃ£o
+                Botao
               </button>
             </div>
           </div>
         </Section>
 
-        <Section delay={90} icon={Sliders} title="OpÃ§Ãµes" description="PreferÃªncias de uso do dia a dia.">
+        <Section delay={90} icon={Sliders} title="Opcoes" description="Preferencias de uso do dia a dia.">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <label className="dash-card rounded-2xl border border-app bg-surface p-4">
               <div className="text-sm font-semibold text-app">Fonte</div>
@@ -202,7 +202,7 @@ export default function SettingsPage() {
             </label>
 
             <label className="dash-card rounded-2xl border border-app bg-surface p-4">
-              <div className="text-sm font-semibold text-app">Filtro padrÃ£o (tarefas)</div>
+              <div className="text-sm font-semibold text-app">Filtro padrao (tarefas)</div>
               <p className="mt-1 text-xs text-muted">Ao abrir Tarefas.</p>
               <select
                 value={settings.defaultTaskFilter}
@@ -211,13 +211,13 @@ export default function SettingsPage() {
               >
                 <option value="pending">Pendentes</option>
                 <option value="all">Tudo</option>
-                <option value="done">ConcluÃ­das</option>
+                <option value="done">Concluidas</option>
               </select>
             </label>
 
             <label className="dash-card rounded-2xl border border-app bg-surface p-4">
               <div className="text-sm font-semibold text-app">Alto contraste</div>
-              <p className="mt-1 text-xs text-muted">Bordas mais visÃ­veis.</p>
+              <p className="mt-1 text-xs text-muted">Bordas mais visiveis.</p>
               <div className="mt-3 flex items-center justify-between gap-3">
                 <span className="text-sm text-app">Ativar</span>
                 <input
@@ -234,8 +234,8 @@ export default function SettingsPage() {
         <Section
           delay={140}
           icon={Shield}
-          title="AdministraÃ§Ã£o"
-          description="NÃ£o Mexa."
+          title="Administracao"
+          description="Nao Mexa."
         >
           <div className="dash-card rounded-2xl border border-app bg-surface p-4">
             <div className="text-sm font-semibold text-app">Senha do admin</div>
@@ -265,14 +265,14 @@ export default function SettingsPage() {
               ) : null}
             </div>
             <div className="mt-2 text-xs text-muted">
-              Base global: {storageConfigured ? storeKind : 'nÃ£o configurado'}.
+              Base global: {storageConfigured ? storeKind : 'nao configurado'}.
             </div>
           </div>
 
           <div className="dash-card mt-4 rounded-2xl border border-app bg-surface p-4">
             <div className="text-sm font-semibold text-app">Painel do admin</div>
             <p className="mt-1 text-xs text-muted">
-              No painel vocÃª adiciona/edita/importa tarefas globais e exporta o JSON.
+              No painel voce adiciona/edita/importa tarefas globais e exporta o JSON.
             </p>
             <div className="mt-3 flex items-center justify-end">
               <Link
