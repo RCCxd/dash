@@ -4,6 +4,7 @@ import { getStoredJSON, setStoredJSON } from '../../utils/storage.js'
 
 const ADMIN_PASSWORD_KEY = 'studentDashboard.adminPassword.v1'
 const ADMIN_PASSWORD_SESSION_KEY = 'studentDashboard.adminPassword.session.v1'
+const GLOBAL_TASKS_DRAFT_KEY = 'studentDashboard.globalTasksDraft.v1'
 
 function localDefaults() {
   return {
@@ -130,17 +131,20 @@ export function GlobalDataProvider({ children }) {
       }
 
       const loaded = await loadGlobalTasksFromJson()
-      setTasks(loaded)
+      const localDraft = getStoredJSON(GLOBAL_TASKS_DRAFT_KEY, null)
+      const effective = localDraft ? normalizeEnvelope(localDraft) : loaded
+      setTasks(effective)
       setStorageConfigured(true)
-      setStoreKind('tarefas-globais.json')
+      setStoreKind(localDraft ? 'localStorage' : 'tarefas-globais.json')
       setAuthRequired(false)
       setAdminOk(false)
       setSource('json')
     } catch (e) {
       const fallback = localDefaults()
-      setTasks(fallback.tasks)
+      const localDraft = getStoredJSON(GLOBAL_TASKS_DRAFT_KEY, null)
+      setTasks(localDraft ? normalizeEnvelope(localDraft) : fallback.tasks)
       setStorageConfigured(true)
-      setStoreKind('tarefas-globais.json')
+      setStoreKind(localDraft ? 'localStorage' : 'tarefas-globais.json')
       setAuthRequired(false)
       setAdminOk(false)
       setSource('json')
@@ -183,7 +187,7 @@ export function GlobalDataProvider({ children }) {
       source,
       authRequired,
       adminOk,
-      isAdmin: source === 'api' ? !authRequired || Boolean(adminOk) : false,
+      isAdmin: source === 'api' ? !authRequired || Boolean(adminOk) : true,
       reload,
       async updateGlobalTasks(nextTasks) {
         const normalized = normalizeEnvelope(nextTasks)
@@ -198,7 +202,11 @@ export function GlobalDataProvider({ children }) {
           return saved.envelope
         }
 
-        throw new Error('Admin requer backend /api/global-data com ADMIN_PASSWORD configurada.')
+        setTasks(normalized)
+        setStoredJSON(GLOBAL_TASKS_DRAFT_KEY, normalized)
+        setStorageConfigured(true)
+        setStoreKind('localStorage')
+        return normalized
       },
     }
   }, [adminOk, adminPassword, authRequired, error, loading, reload, source, storageConfigured, storeKind, tasks])

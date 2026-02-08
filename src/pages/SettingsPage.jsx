@@ -244,7 +244,7 @@ export default function SettingsPage() {
                 ? authRequired
                   ? 'Digite a senha.'
                   : 'Backend sem senha.'
-                : 'Admin requer backend.'}
+                : 'Modo local habilitado.'}
             </p>
             <div className="mt-3 flex items-center gap-2">
               <input

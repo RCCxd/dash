@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+﻿import { useMemo, useState } from 'react'
 import { Download, Pencil, Plus, Trash2, Upload, X } from 'lucide-react'
 import { useGlobalData } from '../state/global/globalDataContext.js'
 import { newId } from '../utils/ids.js'
@@ -6,7 +6,7 @@ import { downloadJson } from '../utils/download.js'
 
 const PRIORITIES = [
   { value: 'high', label: 'Alta' },
-  { value: 'medium', label: 'Média' },
+  { value: 'medium', label: 'MÃ©dia' },
   { value: 'low', label: 'Baixa' },
 ]
 
@@ -125,7 +125,6 @@ export default function AdminPage() {
   async function onAdd(e) {
     e.preventDefault()
     if (!isAdmin) return
-    if (!storageConfigured) return
     const title = form.title.trim()
     if (!title) return
     const now = Date.now()
@@ -146,7 +145,6 @@ export default function AdminPage() {
 
   async function onDelete(id) {
     if (!isAdmin) return
-    if (!storageConfigured) return
     const next = { ...envelope, tasks: envelope.tasks.filter((t) => t?.id !== id) }
     await saveEnvelope(next, { autoExport })
   }
@@ -154,7 +152,6 @@ export default function AdminPage() {
   async function onSaveEdit(e) {
     e.preventDefault()
     if (!isAdmin) return
-    if (!storageConfigured) return
 
     const title = String(editForm.title || '').trim()
     if (!title) return
@@ -184,7 +181,6 @@ export default function AdminPage() {
     e.target.value = ''
 
     if (!isAdmin) return
-    if (!storageConfigured) return
 
     setError('')
     setSuccess('')
@@ -219,7 +215,7 @@ export default function AdminPage() {
           <label
             className={[
               'dash-tab inline-flex cursor-pointer items-center gap-2 rounded-xl border border-app bg-surface px-3 py-2 text-sm',
-              !isAdmin || busy || !storageConfigured
+              !isAdmin || busy
                 ? 'cursor-not-allowed bg-surface2 text-muted'
                 : 'text-app hover:bg-surface2',
             ].join(' ')}
@@ -228,7 +224,7 @@ export default function AdminPage() {
               type="file"
               accept="application/json"
               onChange={onImportFile}
-              disabled={!isAdmin || busy || !storageConfigured}
+              disabled={!isAdmin || busy}
               className="hidden"
             />
             <Upload className="h-4 w-4" />
@@ -252,8 +248,8 @@ export default function AdminPage() {
           {source === 'api'
             ? authRequired
               ? 'Digite a senha configurada em ADMIN_PASSWORD no backend (somente ela libera salvar/importar).'
-              : 'Backend sem senha (ADMIN_PASSWORD não configurada).'
-            : 'Admin requer backend /api/global-data com ADMIN_PASSWORD configurada.'}
+              : 'Backend sem senha (ADMIN_PASSWORD nÃ£o configurada).'
+            : 'Modo local: alteracoes salvas no navegador e exportaveis em JSON.'}
         </p>
         <div className="mt-3 flex items-center gap-2">
           <input
@@ -275,11 +271,11 @@ export default function AdminPage() {
         </div>
         {authRequired && adminPassword && !adminOk ? (
           <div className="mt-2 text-xs text-red-200">
-            Senha incorreta para este backend. Sem a senha certa você não consegue salvar/importar.
+            Senha incorreta para este backend. Sem a senha certa vocÃª nÃ£o consegue salvar/importar.
           </div>
         ) : null}
         <div className="mt-2 text-xs text-muted">
-          Base global: {storageConfigured ? storeKind : 'não configurado'}.
+          Base global: {storageConfigured ? storeKind : 'nÃ£o configurado'}.
         </div>
         {!storageConfigured ? (
           <div className="mt-1 text-xs text-muted">
@@ -306,11 +302,11 @@ export default function AdminPage() {
         <form onSubmit={onAdd} className="mt-4 space-y-3">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <label className="block">
-              <div className="text-xs font-medium text-muted">Matéria</div>
+              <div className="text-xs font-medium text-muted">MatÃ©ria</div>
               <input
                 value={form.subject}
                 onChange={(e) => set('subject', e.target.value)}
-                placeholder="Ex: Matemática"
+                placeholder="Ex: MatemÃ¡tica"
                 className="mt-1 h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
               />
             </label>
@@ -326,22 +322,22 @@ export default function AdminPage() {
           </div>
 
           <label className="block">
-            <div className="text-xs font-medium text-muted">Título *</div>
+            <div className="text-xs font-medium text-muted">TÃ­tulo *</div>
             <input
               value={form.title}
               onChange={(e) => set('title', e.target.value)}
-              placeholder="Ex: Lista de exercícios 3"
+              placeholder="Ex: Lista de exercÃ­cios 3"
               className="mt-1 h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
             />
           </label>
 
           <label className="block">
-            <div className="text-xs font-medium text-muted">Descrição</div>
+            <div className="text-xs font-medium text-muted">DescriÃ§Ã£o</div>
             <textarea
               value={form.description}
               onChange={(e) => set('description', e.target.value)}
               rows={3}
-              placeholder="Detalhes, links, páginas..."
+              placeholder="Detalhes, links, pÃ¡ginas..."
               className="mt-1 w-full resize-none rounded-xl border border-app bg-surface px-3 py-2 text-sm text-app placeholder:text-muted focus:outline-none"
             />
           </label>
@@ -366,10 +362,10 @@ export default function AdminPage() {
 
           <button
             type="submit"
-            disabled={!isAdmin || busy || !storageConfigured}
+            disabled={!isAdmin || busy}
             className={[
               'dash-tab inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium',
-              !isAdmin || busy || !storageConfigured
+              !isAdmin || busy
                 ? 'cursor-not-allowed bg-surface2 text-muted'
                 : 'btn-primary',
             ].join(' ')}
@@ -410,11 +406,11 @@ export default function AdminPage() {
               <div className="flex shrink-0 items-center gap-2">
                 <button
                   type="button"
-                  disabled={!isAdmin || busy || !storageConfigured}
+                  disabled={!isAdmin || busy}
                   onClick={() => openEdit(t)}
                   className={[
                     'dash-tab inline-flex h-9 w-9 items-center justify-center rounded-xl border border-app bg-surface text-app',
-                    !isAdmin || busy || !storageConfigured
+                    !isAdmin || busy
                       ? 'cursor-not-allowed opacity-60'
                       : 'hover:bg-surface2',
                   ].join(' ')}
@@ -424,11 +420,11 @@ export default function AdminPage() {
                 </button>
                 <button
                   type="button"
-                  disabled={!isAdmin || busy || !storageConfigured}
+                  disabled={!isAdmin || busy}
                   onClick={() => onDelete(t.id)}
                   className={[
                     'dash-tab inline-flex h-9 w-9 items-center justify-center rounded-xl border border-app bg-surface text-app',
-                    !isAdmin || busy || !storageConfigured
+                    !isAdmin || busy
                       ? 'cursor-not-allowed opacity-60'
                       : 'hover:bg-surface2',
                   ].join(' ')}
@@ -466,11 +462,11 @@ export default function AdminPage() {
             <form onSubmit={onSaveEdit} className="space-y-3 p-4">
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <label className="block">
-                  <div className="text-xs font-medium text-muted">Matéria</div>
+                  <div className="text-xs font-medium text-muted">MatÃ©ria</div>
                   <input
                     value={editForm.subject}
                     onChange={(e) => setEdit('subject', e.target.value)}
-                    placeholder="Ex: Matemática"
+                    placeholder="Ex: MatemÃ¡tica"
                     className="mt-1 h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
                   />
                 </label>
@@ -486,22 +482,22 @@ export default function AdminPage() {
               </div>
 
               <label className="block">
-                <div className="text-xs font-medium text-muted">Título *</div>
+                <div className="text-xs font-medium text-muted">TÃ­tulo *</div>
                 <input
                   value={editForm.title}
                   onChange={(e) => setEdit('title', e.target.value)}
-                  placeholder="Ex: Lista de exercícios 3"
+                  placeholder="Ex: Lista de exercÃ­cios 3"
                   className="mt-1 h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
                 />
               </label>
 
               <label className="block">
-                <div className="text-xs font-medium text-muted">Descrição</div>
+                <div className="text-xs font-medium text-muted">DescriÃ§Ã£o</div>
                 <textarea
                   value={editForm.description}
                   onChange={(e) => setEdit('description', e.target.value)}
                   rows={3}
-                  placeholder="Detalhes, links, páginas..."
+                  placeholder="Detalhes, links, pÃ¡ginas..."
                   className="mt-1 w-full resize-none rounded-xl border border-app bg-surface px-3 py-2 text-sm text-app placeholder:text-muted focus:outline-none"
                 />
               </label>
@@ -523,15 +519,15 @@ export default function AdminPage() {
 
               <button
                 type="submit"
-                disabled={!isAdmin || busy || !storageConfigured}
+                disabled={!isAdmin || busy}
                 className={[
                   'dash-tab h-10 w-full rounded-xl text-sm font-medium',
-                  !isAdmin || busy || !storageConfigured
+                  !isAdmin || busy
                     ? 'cursor-not-allowed bg-surface2 text-muted'
                     : 'btn-primary',
                 ].join(' ')}
               >
-                Salvar alterações
+                Salvar alteraÃ§Ãµes
               </button>
             </form>
           </div>
@@ -540,3 +536,4 @@ export default function AdminPage() {
     </div>
   )
 }
+
