@@ -96,4 +96,159 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+
+  @keyframes dash-fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(12px) scale(0.985);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes dash-hero-flow {
+    0% {
+      background-position: 0% 20%;
+    }
+
+    50% {
+      background-position: 100% 80%;
+    }
+
+    100% {
+      background-position: 0% 20%;
+    }
+  }
+
+  @keyframes dash-pulse {
+    0%,
+    100% {
+      filter: brightness(0.95);
+    }
+
+    50% {
+      filter: brightness(1.15);
+    }
+  }
+
+  @keyframes dash-overlay {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes dash-modal {
+    from {
+      opacity: 0;
+      transform: translateY(18px) scale(0.985);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .dash-enter {
+    opacity: 0;
+    animation: dash-fade-up 520ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .dash-hero {
+    background:
+      radial-gradient(circle at 6% 8%, rgb(80 166 255 / 28%), transparent 44%),
+      radial-gradient(circle at 100% 92%, rgb(11 94 215 / 26%), transparent 42%),
+      var(--surface);
+    background-size: 180% 180%;
+    animation:
+      dash-fade-up 560ms cubic-bezier(0.22, 1, 0.36, 1) forwards,
+      dash-hero-flow 12s ease-in-out infinite;
+  }
+
+  .dash-card {
+    position: relative;
+    overflow: hidden;
+    transition:
+      transform 220ms ease,
+      box-shadow 220ms ease,
+      background-color 220ms ease;
+  }
+
+  .dash-card::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    pointer-events: none;
+    background: linear-gradient(120deg, transparent 15%, rgb(255 255 255 / 14%) 48%, transparent 82%);
+    transform: translateX(-130%);
+    transition: transform 620ms ease;
+  }
+
+  .dash-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 32px -26px rgb(64 153 255 / 85%);
+  }
+
+  .dash-card:hover::after {
+    transform: translateX(130%);
+  }
+
+  .dash-tab {
+    transition:
+      transform 180ms ease,
+      background-color 180ms ease;
+  }
+
+  .dash-tab:hover {
+    transform: translateY(-1px);
+  }
+
+  .dash-progress-value {
+    transition: width 720ms cubic-bezier(0.22, 1, 0.36, 1);
+    animation: dash-pulse 2.6s ease-in-out infinite;
+  }
+
+  .dash-overlay-in {
+    animation: dash-overlay 220ms ease-out both;
+  }
+
+  .dash-modal-in {
+    animation: dash-modal 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dash-enter,
+    .dash-hero,
+    .dash-progress-value,
+    .dash-overlay-in,
+    .dash-modal-in {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+
+    .dash-card,
+    .dash-tab,
+    .dash-progress-value {
+      transition: none;
+    }
+
+    .dash-card:hover,
+    .dash-tab:hover {
+      transform: none;
+      box-shadow: none;
+    }
+
+    .dash-card:hover::after {
+      transform: translateX(-130%);
+    }
+  }
 }

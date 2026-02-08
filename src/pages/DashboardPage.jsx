@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { ChevronLeft, Plus, SearchX, X } from 'lucide-react'
+﻿import { useMemo, useState } from 'react'
+import { CalendarClock, CheckCircle2, ChevronLeft, ListTodo, Plus, SearchX, X } from 'lucide-react'
 import { useTasks } from '../state/tasks/tasksContext.js'
 import { useSettings } from '../state/settings/settingsContext.js'
 import TaskCard from '../ui/TaskCard.jsx'
@@ -7,17 +7,17 @@ import TaskCard from '../ui/TaskCard.jsx'
 const FILTERS = [
   { key: 'all', label: 'Tudo' },
   { key: 'pending', label: 'Pendentes' },
-  { key: 'done', label: 'Concluídas' },
+  { key: 'done', label: 'Concluidas' },
 ]
 
 const VIEWS = [
-  { key: 'subjects', label: 'Matérias' },
-  { key: 'upcoming', label: 'Próximas' },
+  { key: 'subjects', label: 'Materias' },
+  { key: 'upcoming', label: 'Proximas' },
 ]
 
 const PRIORITIES = [
   { value: 'high', label: 'Alta' },
-  { value: 'medium', label: 'Média' },
+  { value: 'medium', label: 'Media' },
   { value: 'low', label: 'Baixa' },
 ]
 
@@ -27,11 +27,21 @@ function subjectKey(subject) {
 }
 
 function subjectLabel(key) {
-  return key === '__none__' ? 'Sem matéria' : key
+  return key === '__none__' ? 'Sem materia' : key
 }
 
 function isValidIsoDate(dueDate) {
   return Boolean(dueDate && /^\d{4}-\d{2}-\d{2}$/.test(String(dueDate)))
+}
+
+function daysUntil(dateString) {
+  if (!isValidIsoDate(dateString)) return null
+
+  const target = new Date(`${dateString}T00:00:00`)
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+
+  return Math.round((target.getTime() - today.getTime()) / 86400000)
 }
 
 export default function DashboardPage() {
@@ -111,6 +121,35 @@ export default function DashboardPage() {
     return { withDue: pendingWithDue, noDue: pendingNoDue }
   }, [tasks])
 
+  const stats = useMemo(() => {
+    const total = tasks.length
+    const done = tasks.filter((t) => t.status === 'done').length
+    const pending = total - done
+    const dueSoon = tasks.filter((t) => {
+      if (t.status === 'done' || !isValidIsoDate(t.dueDate)) return false
+      const days = daysUntil(t.dueDate)
+      return days !== null && days >= 0 && days <= 7
+    }).length
+
+    return {
+      total,
+      done,
+      pending,
+      dueSoon,
+      completion: total > 0 ? Math.round((done / total) * 100) : 0,
+    }
+  }, [tasks])
+
+  const statCards = useMemo(
+    () => [
+      { key: 'total', label: 'Total', value: stats.total, icon: ListTodo },
+      { key: 'pending', label: 'Pendentes', value: stats.pending, icon: CalendarClock },
+      { key: 'done', label: 'Concluidas', value: stats.done, icon: CheckCircle2 },
+      { key: 'soon', label: 'Entrega 7d', value: stats.dueSoon, icon: CalendarClock },
+    ],
+    [stats],
+  )
+
   function openNew(presetSubject) {
     setEditing(null)
     setForm({
@@ -173,7 +212,7 @@ export default function DashboardPage() {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h1 className="text-lg font-semibold tracking-tight text-app md:text-xl">Tarefas</h1>
-          <p className="mt-1 text-sm text-muted">Organize por matéria e acompanhe prazos.</p>
+          <p className="mt-1 text-sm text-muted">Organize por materia e acompanhe prazos.</p>
         </div>
         <button
           type="button"
@@ -183,6 +222,37 @@ export default function DashboardPage() {
           <Plus className="h-4 w-4" />
           Nova tarefa
         </button>
+      </div>
+
+      <div className="dash-hero dash-enter mt-4 rounded-2xl border border-app p-4" style={{ animationDelay: '40ms' }}>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          {statCards.map((card, index) => {
+            const Icon = card.icon
+            return (
+              <div
+                key={card.key}
+                className="dash-card dash-enter rounded-xl border border-app bg-surface/70 p-3"
+                style={{ animationDelay: `${100 + index * 70}ms` }}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="text-[11px] uppercase tracking-wide text-muted">{card.label}</div>
+                  <Icon className="h-4 w-4 text-muted" />
+                </div>
+                <div className="mt-2 text-xl font-semibold text-app">{card.value}</div>
+              </div>
+            )
+          })}
+        </div>
+
+        <div className="mt-3 rounded-xl border border-app bg-surface/70 p-3">
+          <div className="flex items-center justify-between gap-2 text-xs text-muted">
+            <span>Progresso geral</span>
+            <span className="font-semibold text-app">{stats.completion}%</span>
+          </div>
+          <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface2">
+            <div className="dash-progress-value h-full rounded-full bg-(--primary)" style={{ width: `${stats.completion}%` }} />
+          </div>
+        </div>
       </div>
 
       <div className="mt-4 flex gap-2">
@@ -197,7 +267,7 @@ export default function DashboardPage() {
                 if (v.key !== 'subjects') setActiveSubject(null)
               }}
               className={[
-                'rounded-full border px-3 py-1.5 text-sm',
+                'dash-tab rounded-full border px-3 py-1.5 text-sm',
                 'transition-colors',
                 active ? 'border-app bg-surface2 text-app' : 'border-app bg-surface text-muted hover:bg-surface2',
               ].join(' ')}
@@ -216,10 +286,10 @@ export default function DashboardPage() {
                 <button
                   type="button"
                   onClick={goSubjectsRoot}
-                  className="inline-flex items-center gap-2 rounded-xl border border-app bg-surface px-3 py-2 text-sm text-app hover:bg-surface2"
+                  className="dash-tab inline-flex items-center gap-2 rounded-xl border border-app bg-surface px-3 py-2 text-sm text-app hover:bg-surface2"
                 >
                   <ChevronLeft className="h-4 w-4" />
-                  Matérias
+                  Materias
                 </button>
 
                 <div className="min-w-0 text-sm font-semibold text-app">{activeSubjectInfo.label}</div>
@@ -234,7 +304,7 @@ export default function DashboardPage() {
                       type="button"
                       onClick={() => setFilter(f.key)}
                       className={[
-                        'rounded-full border px-3 py-1.5 text-sm',
+                        'dash-tab rounded-full border px-3 py-1.5 text-sm',
                         'transition-colors',
                         active
                           ? 'border-app bg-surface2 text-app'
@@ -249,25 +319,24 @@ export default function DashboardPage() {
 
               <div className="space-y-3">
                 {visibleTasks.length === 0 ? (
-                  <div className="rounded-2xl border border-app bg-surface p-5 text-center">
+                  <div className="dash-enter rounded-2xl border border-app bg-surface p-5 text-center">
                     <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-surface2">
                       <SearchX className="h-5 w-5 text-muted" />
                     </div>
                     <p className="mt-3 text-sm text-app">Nada por aqui.</p>
-                    <p className="mt-1 text-xs text-muted">
-                      Clique em "Nova tarefa" para criar uma tarefa pessoal (editável).
-                    </p>
+                    <p className="mt-1 text-xs text-muted">Clique em "Nova tarefa" para criar uma tarefa pessoal (editavel).</p>
                   </div>
                 ) : (
-                  visibleTasks.map((task) => (
-                    <TaskCard
-                      key={task.id}
-                      task={task}
-                      readOnly={task.source !== 'user'}
-                      onEdit={task.source === 'user' ? () => openEdit(task) : undefined}
-                      onDelete={task.source === 'user' ? () => deleteUserTask(task.id) : undefined}
-                      onToggleDone={(done) => setTaskStatus(task.id, done ? 'done' : 'pending')}
-                    />
+                  visibleTasks.map((task, index) => (
+                    <div key={task.id} className="dash-card dash-enter" style={{ animationDelay: `${index * 45}ms` }}>
+                      <TaskCard
+                        task={task}
+                        readOnly={task.source !== 'user'}
+                        onEdit={task.source === 'user' ? () => openEdit(task) : undefined}
+                        onDelete={task.source === 'user' ? () => deleteUserTask(task.id) : undefined}
+                        onToggleDone={(done) => setTaskStatus(task.id, done ? 'done' : 'pending')}
+                      />
+                    </div>
                   ))
                 )}
               </div>
@@ -275,32 +344,33 @@ export default function DashboardPage() {
           ) : (
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               {subjects.length === 0 ? (
-                <div className="rounded-2xl border border-app bg-surface p-5 text-center md:col-span-2">
+                <div className="dash-enter rounded-2xl border border-app bg-surface p-5 text-center md:col-span-2">
                   <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-surface2">
                     <SearchX className="h-5 w-5 text-muted" />
                   </div>
                   <p className="mt-3 text-sm text-app">Nenhuma tarefa ainda.</p>
-                  <p className="mt-1 text-xs text-muted">Clique em "Nova tarefa" para começar.</p>
+                  <p className="mt-1 text-xs text-muted">Clique em "Nova tarefa" para comecar.</p>
                 </div>
               ) : (
-                subjects.map((s) => (
+                subjects.map((s, index) => (
                   <button
                     key={s.key}
                     type="button"
                     onClick={() => setActiveSubject(s.key)}
-                    className="rounded-2xl border border-app bg-surface p-4 text-left transition-colors hover:bg-surface2"
+                    className="dash-card dash-enter rounded-2xl border border-app bg-surface p-4 text-left transition-colors hover:bg-surface2"
+                    style={{ animationDelay: `${index * 45}ms` }}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <div className="truncate text-sm font-semibold text-app">{s.label}</div>
                         <div className="mt-1 text-xs text-muted">
-                          {s.pending} pendente{s.pending === 1 ? '' : 's'} • {s.done} concluída
+                          {s.pending} pendente{s.pending === 1 ? '' : 's'} - {s.done} concluida
                           {s.done === 1 ? '' : 's'}
                         </div>
                       </div>
                       {s.nextDue !== '9999-12-31' ? (
                         <div className="shrink-0 rounded-full border border-app bg-surface px-2 py-0.5 text-xs text-muted">
-                          Próxima: {s.nextDue.split('-').reverse().join('/')}
+                          Proxima: {s.nextDue.split('-').reverse().join('/')}
                         </div>
                       ) : null}
                     </div>
@@ -312,14 +382,14 @@ export default function DashboardPage() {
         </div>
       ) : (
         <div className="mt-4 space-y-4">
-          <div className="rounded-2xl border border-app bg-surface p-4">
+          <div className="dash-enter rounded-2xl border border-app bg-surface p-4">
             <div className="text-sm font-semibold text-app">Mais perto da entrega</div>
             <p className="mt-1 text-xs text-muted">Pendentes com data ordenadas por prazo.</p>
           </div>
 
           <div className="space-y-3">
             {upcomingTasks.withDue.length === 0 ? (
-              <div className="rounded-2xl border border-app bg-surface p-5 text-center">
+              <div className="dash-enter rounded-2xl border border-app bg-surface p-5 text-center">
                 <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-surface2">
                   <SearchX className="h-5 w-5 text-muted" />
                 </div>
@@ -327,33 +397,35 @@ export default function DashboardPage() {
                 <p className="mt-1 text-xs text-muted">Adicione datas de entrega nas tarefas para aparecer aqui.</p>
               </div>
             ) : (
-              upcomingTasks.withDue.slice(0, 30).map((task) => (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  readOnly={task.source !== 'user'}
-                  onEdit={task.source === 'user' ? () => openEdit(task) : undefined}
-                  onDelete={task.source === 'user' ? () => deleteUserTask(task.id) : undefined}
-                  onToggleDone={(done) => setTaskStatus(task.id, done ? 'done' : 'pending')}
-                />
-              ))
-            )}
-          </div>
-
-          {upcomingTasks.noDue.length ? (
-            <div className="rounded-2xl border border-app bg-surface p-4">
-              <div className="text-sm font-semibold text-app">Sem data</div>
-              <p className="mt-1 text-xs text-muted">Também pendentes, mas sem prazo definido.</p>
-              <div className="mt-3 space-y-3">
-                {upcomingTasks.noDue.slice(0, 10).map((task) => (
+              upcomingTasks.withDue.slice(0, 30).map((task, index) => (
+                <div key={task.id} className="dash-card dash-enter" style={{ animationDelay: `${index * 45}ms` }}>
                   <TaskCard
-                    key={task.id}
                     task={task}
                     readOnly={task.source !== 'user'}
                     onEdit={task.source === 'user' ? () => openEdit(task) : undefined}
                     onDelete={task.source === 'user' ? () => deleteUserTask(task.id) : undefined}
                     onToggleDone={(done) => setTaskStatus(task.id, done ? 'done' : 'pending')}
                   />
+                </div>
+              ))
+            )}
+          </div>
+
+          {upcomingTasks.noDue.length ? (
+            <div className="dash-enter rounded-2xl border border-app bg-surface p-4">
+              <div className="text-sm font-semibold text-app">Sem data</div>
+              <p className="mt-1 text-xs text-muted">Tambem pendentes, mas sem prazo definido.</p>
+              <div className="mt-3 space-y-3">
+                {upcomingTasks.noDue.slice(0, 10).map((task, index) => (
+                  <div key={task.id} className="dash-card dash-enter" style={{ animationDelay: `${index * 45}ms` }}>
+                    <TaskCard
+                      task={task}
+                      readOnly={task.source !== 'user'}
+                      onEdit={task.source === 'user' ? () => openEdit(task) : undefined}
+                      onDelete={task.source === 'user' ? () => deleteUserTask(task.id) : undefined}
+                      onToggleDone={(done) => setTaskStatus(task.id, done ? 'done' : 'pending')}
+                    />
+                  </div>
                 ))}
               </div>
             </div>
@@ -362,8 +434,8 @@ export default function DashboardPage() {
       )}
 
       {editorOpen ? (
-        <div className="fixed inset-0 z-30 flex items-end justify-center bg-black/40 p-4 md:items-center">
-          <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-app bg-surface shadow-xl">
+        <div className="dash-overlay-in fixed inset-0 z-30 flex items-end justify-center bg-black/40 p-4 md:items-center">
+          <div className="dash-modal-in w-full max-w-lg overflow-hidden rounded-2xl border border-app bg-surface shadow-xl">
             <div className="flex items-center justify-between border-b border-app px-4 py-3">
               <div className="text-sm font-semibold text-app">{editing ? 'Editar tarefa' : 'Nova tarefa'}</div>
               <button
@@ -379,11 +451,11 @@ export default function DashboardPage() {
             <form onSubmit={onSave} className="space-y-3 p-4">
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <label className="block">
-                  <div className="text-xs font-medium text-muted">Matéria</div>
+                  <div className="text-xs font-medium text-muted">Materia</div>
                   <input
                     value={form.subject}
                     onChange={(e) => set('subject', e.target.value)}
-                    placeholder="Ex: Matemática"
+                    placeholder="Ex: Matematica"
                     className="mt-1 h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
                   />
                 </label>
@@ -400,22 +472,22 @@ export default function DashboardPage() {
               </div>
 
               <label className="block">
-                <div className="text-xs font-medium text-muted">Título *</div>
+                <div className="text-xs font-medium text-muted">Titulo *</div>
                 <input
                   value={form.title}
                   onChange={(e) => set('title', e.target.value)}
-                  placeholder="Ex: Lista de exercícios 3"
+                  placeholder="Ex: Lista de exercicios 3"
                   className="mt-1 h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
                 />
               </label>
 
               <label className="block">
-                <div className="text-xs font-medium text-muted">Descrição</div>
+                <div className="text-xs font-medium text-muted">Descricao</div>
                 <textarea
                   value={form.description}
                   onChange={(e) => set('description', e.target.value)}
                   rows={3}
-                  placeholder="Detalhes, links, páginas..."
+                  placeholder="Detalhes, links, paginas..."
                   className="mt-1 w-full resize-none rounded-xl border border-app bg-surface px-3 py-2 text-sm text-app placeholder:text-muted focus:outline-none"
                 />
               </label>
