@@ -91,13 +91,13 @@ export default function HerberthSheetsPage() {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 pb-24 pt-4 md:pb-6">
-      <div>
+      <div className="dash-enter">
         <h1 className="text-lg font-semibold tracking-tight text-app md:text-xl">Fichas de Herberth</h1>
         <p className="mt-1 text-sm text-muted">Links para PDFs resolvidos.</p>
       </div>
 
       {isAdmin ? (
-        <div className="mt-4 rounded-2xl border border-app bg-surface p-4">
+        <div className="dash-card dash-enter mt-4 rounded-2xl border border-app bg-surface p-4" style={{ animationDelay: '40ms' }}>
           <div className="text-sm font-semibold text-app">Adicionar link</div>
           {!storageConfigured ? (
             <p className="mt-1 text-xs text-muted">
@@ -142,7 +142,7 @@ export default function HerberthSheetsPage() {
               type="submit"
               disabled={!isAdmin || busy}
               className={[
-                'inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium',
+                'dash-tab inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium',
                 !isAdmin || busy
                   ? 'cursor-not-allowed bg-surface2 text-muted'
                   : 'btn-primary',
@@ -157,12 +157,12 @@ export default function HerberthSheetsPage() {
 
       <div className="mt-4 space-y-3">
         {sheets.length === 0 ? (
-          <div className="rounded-2xl border border-app bg-surface p-4 text-sm text-muted">
+          <div className="dash-enter rounded-2xl border border-app bg-surface p-4 text-sm text-muted">
             Nenhuma ficha cadastrada ainda.
           </div>
         ) : (
-          sheets.map((item) => (
-            <div key={item.id} className="rounded-2xl border border-app bg-surface p-4">
+          sheets.map((item, index) => (
+            <div key={item.id} className="dash-card dash-enter rounded-2xl border border-app bg-surface p-4" style={{ animationDelay: `${index * 45}ms` }}>
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="text-sm font-semibold text-app">{item.title}</div>
@@ -171,7 +171,7 @@ export default function HerberthSheetsPage() {
                     href={item.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-2 inline-flex items-center gap-1 text-sm text-(--primary) hover:underline"
+                    className="dash-tab mt-2 inline-flex items-center gap-1 text-sm text-(--primary) hover:underline"
                   >
                     Abrir PDF
                     <ExternalLink className="h-4 w-4" />
@@ -184,7 +184,7 @@ export default function HerberthSheetsPage() {
                     disabled={busy}
                     onClick={() => onDelete(item.id)}
                     className={[
-                      'inline-flex h-9 w-9 items-center justify-center rounded-xl border border-app bg-surface text-app',
+                      'dash-tab inline-flex h-9 w-9 items-center justify-center rounded-xl border border-app bg-surface text-app',
                       busy ? 'cursor-not-allowed opacity-60' : 'hover:bg-surface2',
                     ].join(' ')}
                     aria-label="Excluir"

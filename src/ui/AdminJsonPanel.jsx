@@ -37,7 +37,7 @@ export default function AdminJsonPanel({
   }
 
   return (
-    <div className="rounded-2xl border border-app bg-surface p-4">
+    <div className="dash-card dash-enter rounded-2xl border border-app bg-surface p-4">
       <div className="text-sm font-semibold text-app">{title}</div>
       {description ? <p className="mt-1 text-xs text-muted">{description}</p> : null}
       <textarea
@@ -51,7 +51,7 @@ export default function AdminJsonPanel({
         <button
           type="button"
           onClick={() => downloadJson(`${filename || 'admin-export'}.json`, draft)}
-          className="inline-flex items-center gap-2 rounded-xl border border-app bg-surface px-3 py-2 text-sm font-medium text-app hover:bg-surface2"
+          className="dash-tab inline-flex items-center gap-2 rounded-xl border border-app bg-surface px-3 py-2 text-sm font-medium text-app hover:bg-surface2"
         >
           <Download className="h-4 w-4" />
           Exportar JSON
@@ -61,7 +61,7 @@ export default function AdminJsonPanel({
           onClick={onSubmit}
           disabled={busy}
           className={[
-            'inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium',
+            'dash-tab inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium',
             busy
               ? 'cursor-not-allowed bg-surface2 text-muted'
               : 'btn-primary',

@@ -27,7 +27,7 @@ export default function TaskCard({ task, readOnly = false, onEdit, onDelete, onT
   const canToggle = typeof onToggleDone === 'function'
 
   return (
-    <div className="rounded-2xl border border-app bg-surface p-4">
+    <div className="dash-card rounded-2xl border border-app bg-surface p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -78,7 +78,7 @@ export default function TaskCard({ task, readOnly = false, onEdit, onDelete, onT
               <button
                 type="button"
                 onClick={onEdit}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-app bg-surface text-app hover:bg-surface2"
+                className="dash-tab inline-flex h-9 w-9 items-center justify-center rounded-xl border border-app bg-surface text-app hover:bg-surface2"
                 aria-label="Editar"
               >
                 <Pencil className="h-4 w-4" />
@@ -86,7 +86,7 @@ export default function TaskCard({ task, readOnly = false, onEdit, onDelete, onT
               <button
                 type="button"
                 onClick={onDelete}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-app bg-surface text-app hover:bg-surface2"
+                className="dash-tab inline-flex h-9 w-9 items-center justify-center rounded-xl border border-app bg-surface text-app hover:bg-surface2"
                 aria-label="Excluir"
               >
                 <Trash2 className="h-4 w-4" />

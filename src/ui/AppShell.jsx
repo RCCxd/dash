@@ -9,7 +9,7 @@ function NavItem({ to, icon, label }) {
       to={to}
       className={({ isActive }) =>
         [
-          'flex items-center gap-2 rounded-xl px-3 py-2 text-sm',
+          'dash-tab flex items-center gap-2 rounded-xl px-3 py-2 text-sm',
           'transition-colors',
           isActive
             ? 'bg-surface2 text-app'
@@ -34,9 +34,9 @@ export default function AppShell({ children }) {
   const onAdmin = active.startsWith('/admin')
 
   return (
-    <div className="min-h-full bg-app" lang="pt-BR" spellCheck autoCorrect="on">
+    <div className="min-h-full bg-app bg-app-animated" lang="pt-BR" spellCheck autoCorrect="on">
       <div className="mx-auto flex w-full max-w-5xl">
-        <aside className="hidden w-64 shrink-0 border-r border-app px-4 py-6 md:block">
+        <aside className="dash-enter hidden w-64 shrink-0 border-r border-app px-4 py-6 md:block" style={{ animationDelay: '20ms' }}>
           <div className="text-sm font-semibold tracking-tight text-app">
             Tarefas do Estudante
           </div>
@@ -53,12 +53,12 @@ export default function AppShell({ children }) {
         <main className="min-w-0 flex-1">{children}</main>
       </div>
 
-      <nav className="fixed bottom-0 left-0 right-0 z-20 border-t border-app bg-app backdrop-blur md:hidden">
+      <nav className="dash-enter fixed bottom-0 left-0 right-0 z-20 border-t border-app bg-app backdrop-blur md:hidden" style={{ animationDelay: '20ms' }}>
         <div className="mx-auto flex max-w-3xl items-stretch justify-around px-4 safe-bottom">
           <NavLink
             to="/"
             className={[
-              'flex flex-1 flex-col items-center gap-1 py-3 text-xs',
+              'dash-tab flex flex-1 flex-col items-center gap-1 py-3 text-xs',
               onDashboard ? 'text-app' : 'text-muted',
             ].join(' ')}
           >
@@ -68,7 +68,7 @@ export default function AppShell({ children }) {
           <NavLink
             to="/rotina"
             className={[
-              'flex flex-1 flex-col items-center gap-1 py-3 text-xs',
+              'dash-tab flex flex-1 flex-col items-center gap-1 py-3 text-xs',
               onRoutine ? 'text-app' : 'text-muted',
             ].join(' ')}
           >
@@ -78,7 +78,7 @@ export default function AppShell({ children }) {
           <NavLink
             to="/fichas-herberth"
             className={[
-              'flex flex-1 flex-col items-center gap-1 py-3 text-xs',
+              'dash-tab flex flex-1 flex-col items-center gap-1 py-3 text-xs',
               onHerberthSheets ? 'text-app' : 'text-muted',
             ].join(' ')}
           >
@@ -88,7 +88,7 @@ export default function AppShell({ children }) {
           <NavLink
             to="/configuracoes"
             className={[
-              'flex flex-1 flex-col items-center gap-1 py-3 text-xs',
+              'dash-tab flex flex-1 flex-col items-center gap-1 py-3 text-xs',
               onSettings ? 'text-app' : 'text-muted',
             ].join(' ')}
           >
@@ -99,7 +99,7 @@ export default function AppShell({ children }) {
             <NavLink
               to="/admin"
               className={[
-                'flex flex-1 flex-col items-center gap-1 py-3 text-xs',
+                'dash-tab flex flex-1 flex-col items-center gap-1 py-3 text-xs',
                 onAdmin ? 'text-app' : 'text-muted',
               ].join(' ')}
             >

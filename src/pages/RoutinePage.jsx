@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { Pencil, Plus, RotateCcw, Trash2, X } from 'lucide-react'
+﻿import { useMemo, useState } from 'react'
+import { Lock, Pencil, Plus, RotateCcw, Trash2, X } from 'lucide-react'
 import { useUserData } from '../state/user/userDataContext.js'
 import { newId } from '../utils/ids.js'
 import { formatWeekdayShort } from '../utils/week.js'
@@ -56,7 +56,7 @@ function RoutineGrid({ events }) {
   }, [events])
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-app bg-surface">
+    <div className="dash-card overflow-hidden rounded-2xl border border-app bg-surface">
       <div className="grid grid-cols-[56px_repeat(7,minmax(110px,1fr))] border-b border-app md:grid-cols-[56px_repeat(7,minmax(0,1fr))]">
         <div className="p-2 text-xs text-muted">Hora</div>
         {DAYS.map((d) => (
@@ -98,7 +98,7 @@ function RoutineGrid({ events }) {
                   >
                     <div className="truncate font-medium">{e.title}</div>
                     <div className="truncate text-[11px] text-muted">
-                      {e.start}–{e.end}
+                      {e.start}â€“{e.end}
                     </div>
                   </div>
                 )
@@ -125,6 +125,11 @@ export default function RoutinePage() {
     list.sort((a, b) => a.day - b.day || toMinutes(a.start) - toMinutes(b.start))
     return list
   }, [userRoutine])
+
+  const localEventsCount = useMemo(
+    () => myEventsSorted.filter((event) => event.source !== 'shared').length,
+    [myEventsSorted],
+  )
 
   const [editorOpen, setEditorOpen] = useState(false)
   const [editing, setEditing] = useState(null)
@@ -181,25 +186,25 @@ export default function RoutinePage() {
   }
 
   function clearAll() {
-    if (userRoutine.length === 0) return
+    if (localEventsCount === 0) return
     if (!window.confirm('Limpar todas as atividades locais?')) return
     replaceUserRoutine([])
   }
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 pb-24 pt-4 md:pb-6">
-      <div className="flex items-start justify-between gap-3">
+      <div className="dash-enter flex items-start justify-between gap-3">
         <div>
           <h1 className="text-lg font-semibold tracking-tight text-app md:text-xl">Rotina</h1>
           <p className="mt-1 text-sm text-muted">
-            Monte sua rotina manualmente. Os dados ficam salvos apenas neste dispositivo.
+            A grade da turma vem preenchida para todos. Atividades extras ficam salvas neste dispositivo.
           </p>
         </div>
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={openNew}
-            className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium btn-primary"
+            className="dash-tab inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium btn-primary"
           >
             <Plus className="h-4 w-4" />
             Adicionar
@@ -207,10 +212,10 @@ export default function RoutinePage() {
           <button
             type="button"
             onClick={clearAll}
-            disabled={userRoutine.length === 0}
+            disabled={localEventsCount === 0}
             className={[
-              'inline-flex items-center gap-2 rounded-xl border border-app px-3 py-2 text-sm',
-              userRoutine.length === 0
+              'dash-tab inline-flex items-center gap-2 rounded-xl border border-app px-3 py-2 text-sm',
+              localEventsCount === 0
                 ? 'cursor-not-allowed bg-surface2 text-muted'
                 : 'bg-surface text-app hover:bg-surface2',
             ].join(' ')}
@@ -221,7 +226,7 @@ export default function RoutinePage() {
         </div>
       </div>
 
-      <div className="mt-4">
+      <div className="dash-enter mt-4" style={{ animationDelay: '40ms' }}>
         <div className="mb-2 text-xs font-medium text-muted">Grade semanal</div>
         <div className="overflow-x-auto rounded-2xl md:overflow-x-visible">
           <div className="min-w-[960px] md:min-w-0">
@@ -230,16 +235,16 @@ export default function RoutinePage() {
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-app bg-surface p-4">
+      <div className="dash-card dash-enter mt-6 rounded-2xl border border-app bg-surface p-4" style={{ animationDelay: '80ms' }}>
         <div className="flex items-center justify-between gap-3">
           <div>
             <div className="text-sm font-semibold text-app">Minhas atividades</div>
-            <p className="mt-1 text-xs text-muted">Editar e excluir funciona só no seu dispositivo.</p>
+            <p className="mt-1 text-xs text-muted">Aulas da turma ficam fixas. Somente atividades pessoais podem ser editadas.</p>
           </div>
           <button
             type="button"
             onClick={openNew}
-            className="inline-flex items-center gap-2 rounded-xl border border-app bg-surface px-3 py-2 text-sm text-app hover:bg-surface2"
+            className="dash-tab inline-flex items-center gap-2 rounded-xl border border-app bg-surface px-3 py-2 text-sm text-app hover:bg-surface2"
           >
             <Plus className="h-4 w-4" />
             Adicionar
@@ -248,48 +253,63 @@ export default function RoutinePage() {
 
         <div className="mt-3 space-y-2">
           {myEventsSorted.length === 0 ? (
-            <div className="rounded-2xl border border-app bg-surface p-4 text-sm text-muted">
+            <div className="dash-enter rounded-2xl border border-app bg-surface p-4 text-sm text-muted">
               Nenhuma atividade salva ainda.
             </div>
           ) : (
-            myEventsSorted.map((e) => (
-              <div
-                key={e.id}
-                className="flex items-center justify-between gap-3 rounded-2xl border border-app bg-surface px-3 py-2"
-              >
-                <div className="min-w-0">
-                  <div className="truncate text-sm font-medium text-app">{e.title}</div>
-                  <div className="truncate text-xs text-muted">
-                    {formatWeekdayShort(e.day)} {e.start}–{e.end}
+            myEventsSorted.map((e, index) => {
+              const readOnly = e.source === 'shared'
+              return (
+                <div
+                  key={e.id}
+                  className="dash-card dash-enter flex items-center justify-between gap-3 rounded-2xl border border-app bg-surface px-3 py-2"
+                  style={{ animationDelay: `${index * 45}ms` }}
+                >
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-medium text-app">{e.title}</div>
+                    <div className="truncate text-xs text-muted">
+                      {formatWeekdayShort(e.day)} {e.start}â€“{e.end}
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
+                    {readOnly ? (
+                      <span
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-app bg-surface2 text-muted"
+                        title="Aula fixa da turma"
+                      >
+                        <Lock className="h-4 w-4" />
+                      </span>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => openEdit(e)}
+                          className="dash-tab inline-flex h-9 w-9 items-center justify-center rounded-xl border border-app bg-surface text-app hover:bg-surface2"
+                          aria-label="Editar"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => deleteUserRoutineEvent(e.id)}
+                          className="dash-tab inline-flex h-9 w-9 items-center justify-center rounded-xl border border-app bg-surface text-app hover:bg-surface2"
+                          aria-label="Excluir"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => openEdit(e)}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-app bg-surface text-app hover:bg-surface2"
-                    aria-label="Editar"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => deleteUserRoutineEvent(e.id)}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-app bg-surface text-app hover:bg-surface2"
-                    aria-label="Excluir"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            ))
+              )
+            })
           )}
         </div>
       </div>
 
       {editorOpen ? (
-        <div className="fixed inset-0 z-30 flex items-end justify-center bg-black/40 p-4 md:items-center">
-          <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-app bg-surface shadow-xl">
+        <div className="dash-overlay-in fixed inset-0 z-30 flex items-end justify-center bg-black/40 p-4 md:items-center">
+          <div className="dash-modal-in w-full max-w-lg overflow-hidden rounded-2xl border border-app bg-surface shadow-xl">
             <div className="flex items-center justify-between border-b border-app px-4 py-3">
               <div className="text-sm font-semibold text-app">
                 {editing ? 'Editar atividade' : 'Adicionar atividade'}
@@ -297,7 +317,7 @@ export default function RoutinePage() {
               <button
                 type="button"
                 onClick={closeEditor}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-app bg-surface text-app hover:bg-surface2"
+                className="dash-tab inline-flex h-9 w-9 items-center justify-center rounded-xl border border-app bg-surface text-app hover:bg-surface2"
                 aria-label="Fechar"
               >
                 <X className="h-4 w-4" />
@@ -306,11 +326,11 @@ export default function RoutinePage() {
 
             <form onSubmit={onSave} className="space-y-3 p-4">
               <label className="block">
-                <div className="text-xs font-medium text-muted">Título *</div>
+                <div className="text-xs font-medium text-muted">TÃ­tulo *</div>
                 <input
                   value={form.title}
                   onChange={(e) => set('title', e.target.value)}
-                  placeholder="Ex: Estudar Matemática"
+                  placeholder="Ex: Estudar MatemÃ¡tica"
                   className="mt-1 h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
                 />
               </label>
@@ -332,7 +352,7 @@ export default function RoutinePage() {
                 </label>
 
                 <label className="block">
-                  <div className="text-xs font-medium text-muted">Início</div>
+                  <div className="text-xs font-medium text-muted">InÃ­cio</div>
                   <input
                     type="time"
                     value={form.start}
@@ -352,7 +372,7 @@ export default function RoutinePage() {
                 </label>
               </div>
 
-              <button type="submit" className="h-10 w-full rounded-xl text-sm font-medium btn-primary">
+              <button type="submit" className="dash-tab h-10 w-full rounded-xl text-sm font-medium btn-primary">
                 Salvar
               </button>
             </form>
@@ -362,3 +382,4 @@ export default function RoutinePage() {
     </div>
   )
 }
+

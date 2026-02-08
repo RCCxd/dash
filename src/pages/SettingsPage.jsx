@@ -1,13 +1,13 @@
-import { createElement, useMemo, useState } from 'react'
+﻿import { createElement, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Check, Palette, RotateCcw, Shield, Sliders } from 'lucide-react'
 import { useSettings } from '../state/settings/settingsContext.js'
 import { useGlobalData } from '../state/global/globalDataContext.js'
 import { normalizeHex } from '../utils/colors.js'
 
-function Section({ icon, title, description, children }) {
+function Section({ icon, title, description, children, delay = 0 }) {
   return (
-    <section className="rounded-2xl border border-app bg-surface p-4">
+    <section className="dash-card dash-enter rounded-2xl border border-app bg-surface p-4" style={{ animationDelay: `${delay}ms` }}>
       <div className="flex items-start gap-3">
         <div className="mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-surface2 text-app">
           {createElement(icon, { className: 'h-5 w-5' })}
@@ -28,7 +28,7 @@ function ModeButton({ active, title, subtitle, onClick }) {
       type="button"
       onClick={onClick}
       className={[
-        'w-full rounded-2xl border px-4 py-3 text-left transition-colors',
+        'dash-tab w-full rounded-2xl border px-4 py-3 text-left transition-colors',
         active ? 'border-app bg-surface2' : 'border-app bg-surface hover:bg-surface2',
       ].join(' ')}
     >
@@ -77,13 +77,13 @@ function HexPicker({ label, value, onChange }) {
         />
       </div>
       <div className="mt-2 flex items-center justify-between gap-3">
-        <div className="text-xs text-muted">{normalized ? normalized.toUpperCase() : 'Inválido'}</div>
+        <div className="text-xs text-muted">{normalized ? normalized.toUpperCase() : 'InvÃ¡lido'}</div>
         <div className="inline-flex items-center gap-2 text-xs text-muted">
           <span
             className="h-4 w-4 rounded border border-app"
             style={{ background: normalized || 'transparent' }}
           />
-          Prévia
+          PrÃ©via
         </div>
       </div>
     </label>
@@ -104,17 +104,17 @@ export default function SettingsPage() {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 pb-24 pt-4 md:pb-6">
-      <div className="flex items-start justify-between gap-3">
+      <div className="dash-enter flex items-start justify-between gap-3">
         <div>
           <h1 className="text-lg font-semibold tracking-tight text-app md:text-xl">
-            Configurações
+            ConfiguraÃ§Ãµes
           </h1>
-          <p className="mt-1 text-sm text-muted">Ajuste aparência e comportamento do app.</p>
+          <p className="mt-1 text-sm text-muted">Ajuste aparÃªncia e comportamento do app.</p>
         </div>
         <button
           type="button"
           onClick={resetSettings}
-          className="inline-flex items-center gap-2 rounded-xl border border-app bg-surface px-3 py-2 text-sm text-app hover:bg-surface2"
+          className="dash-tab inline-flex items-center gap-2 rounded-xl border border-app bg-surface px-3 py-2 text-sm text-app hover:bg-surface2"
         >
           <RotateCcw className="h-4 w-4" />
           Resetar
@@ -123,15 +123,16 @@ export default function SettingsPage() {
 
       <div className="mt-4 space-y-4">
         <Section
+          delay={40}
           icon={Palette}
-          title="Aparência"
+          title="AparÃªncia"
           description="Modo Marista (azul), claro, escuro ou personalizado."
         >
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <ModeButton
               active={settings.themeMode === 'marista'}
               title="Normal (Marista)"
-              subtitle="Azul Marista (padrão)"
+              subtitle="Azul Marista (padrÃ£o)"
               onClick={() => updateSettings({ themeMode: 'marista' })}
             />
             <ModeButton
@@ -143,7 +144,7 @@ export default function SettingsPage() {
             <ModeButton
               active={settings.themeMode === 'dark'}
               title="Escuro"
-              subtitle="Menos brilho à noite"
+              subtitle="Menos brilho Ã  noite"
               onClick={() => updateSettings({ themeMode: 'dark' })}
             />
             <ModeButton
@@ -157,7 +158,7 @@ export default function SettingsPage() {
           {settings.themeMode === 'custom' ? (
             <div className="mt-4 space-y-4">
               <HexPicker
-                label="Cor primária (botões/links)"
+                label="Cor primÃ¡ria (botÃµes/links)"
                 value={settings.customPrimary}
                 onChange={(hex) => updateSettings({ customPrimary: hex })}
               />
@@ -169,24 +170,24 @@ export default function SettingsPage() {
             </div>
           ) : null}
 
-          <div className="mt-4 rounded-2xl border border-app bg-surface p-4">
-            <div className="text-xs font-medium text-muted">Prévia</div>
-            <div className="mt-3 rounded-2xl border border-app bg-surface2 p-4">
+          <div className="dash-card mt-4 rounded-2xl border border-app bg-surface p-4">
+            <div className="text-xs font-medium text-muted">PrÃ©via</div>
+            <div className="dash-card mt-3 rounded-2xl border border-app bg-surface2 p-4">
               <div className="text-sm font-semibold text-app">Card de exemplo</div>
-              <p className="mt-1 text-xs text-muted">Texto secundário e um botão primário.</p>
+              <p className="mt-1 text-xs text-muted">Texto secundÃ¡rio e um botÃ£o primÃ¡rio.</p>
               <button
                 type="button"
-                className="mt-3 rounded-xl px-3 py-2 text-sm font-medium btn-primary"
+                className="dash-tab mt-3 rounded-xl px-3 py-2 text-sm font-medium btn-primary"
               >
-                Botão
+                BotÃ£o
               </button>
             </div>
           </div>
         </Section>
 
-        <Section icon={Sliders} title="Opções" description="Preferências de uso do dia a dia.">
+        <Section delay={90} icon={Sliders} title="OpÃ§Ãµes" description="PreferÃªncias de uso do dia a dia.">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <label className="rounded-2xl border border-app bg-surface p-4">
+            <label className="dash-card rounded-2xl border border-app bg-surface p-4">
               <div className="text-sm font-semibold text-app">Fonte</div>
               <p className="mt-1 text-xs text-muted">Tamanho do texto no app.</p>
               <select
@@ -200,8 +201,8 @@ export default function SettingsPage() {
               </select>
             </label>
 
-            <label className="rounded-2xl border border-app bg-surface p-4">
-              <div className="text-sm font-semibold text-app">Filtro padrão (tarefas)</div>
+            <label className="dash-card rounded-2xl border border-app bg-surface p-4">
+              <div className="text-sm font-semibold text-app">Filtro padrÃ£o (tarefas)</div>
               <p className="mt-1 text-xs text-muted">Ao abrir Tarefas.</p>
               <select
                 value={settings.defaultTaskFilter}
@@ -210,13 +211,13 @@ export default function SettingsPage() {
               >
                 <option value="pending">Pendentes</option>
                 <option value="all">Tudo</option>
-                <option value="done">Concluídas</option>
+                <option value="done">ConcluÃ­das</option>
               </select>
             </label>
 
-            <label className="rounded-2xl border border-app bg-surface p-4">
+            <label className="dash-card rounded-2xl border border-app bg-surface p-4">
               <div className="text-sm font-semibold text-app">Alto contraste</div>
-              <p className="mt-1 text-xs text-muted">Bordas mais visíveis.</p>
+              <p className="mt-1 text-xs text-muted">Bordas mais visÃ­veis.</p>
               <div className="mt-3 flex items-center justify-between gap-3">
                 <span className="text-sm text-app">Ativar</span>
                 <input
@@ -231,11 +232,12 @@ export default function SettingsPage() {
         </Section>
 
         <Section
+          delay={140}
           icon={Shield}
-          title="Administração"
-          description="Não Mexa."
+          title="AdministraÃ§Ã£o"
+          description="NÃ£o Mexa."
         >
-          <div className="rounded-2xl border border-app bg-surface p-4">
+          <div className="dash-card rounded-2xl border border-app bg-surface p-4">
             <div className="text-sm font-semibold text-app">Senha do admin</div>
             <p className="mt-1 text-xs text-muted">
               {source === 'api'
@@ -256,27 +258,27 @@ export default function SettingsPage() {
                 <button
                   type="button"
                   onClick={() => setAdminPassword('')}
-                  className="h-10 shrink-0 rounded-xl border border-app bg-surface px-3 text-sm font-medium text-app hover:bg-surface2"
+                  className="dash-tab h-10 shrink-0 rounded-xl border border-app bg-surface px-3 text-sm font-medium text-app hover:bg-surface2"
                 >
                   Sair
                 </button>
               ) : null}
             </div>
             <div className="mt-2 text-xs text-muted">
-              Base global: {storageConfigured ? storeKind : 'não configurado'}.
+              Base global: {storageConfigured ? storeKind : 'nÃ£o configurado'}.
             </div>
           </div>
 
-          <div className="mt-4 rounded-2xl border border-app bg-surface p-4">
+          <div className="dash-card mt-4 rounded-2xl border border-app bg-surface p-4">
             <div className="text-sm font-semibold text-app">Painel do admin</div>
             <p className="mt-1 text-xs text-muted">
-              No painel você adiciona/edita/importa tarefas globais e exporta o JSON.
+              No painel vocÃª adiciona/edita/importa tarefas globais e exporta o JSON.
             </p>
             <div className="mt-3 flex items-center justify-end">
               <Link
                 to="/admin"
                 className={[
-                  'inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium',
+                  'dash-tab inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium',
                   isAdmin ? 'btn-primary' : 'pointer-events-none bg-surface2 text-muted',
                 ].join(' ')}
               >
@@ -289,3 +291,5 @@ export default function SettingsPage() {
     </div>
   )
 }
+
+

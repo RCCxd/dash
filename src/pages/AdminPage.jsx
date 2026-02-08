@@ -208,7 +208,7 @@ export default function AdminPage() {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 pb-24 pt-4 md:pb-6">
-      <div className="flex items-start justify-between gap-3">
+      <div className="dash-enter flex items-start justify-between gap-3">
         <div>
           <h1 className="text-lg font-semibold tracking-tight text-app md:text-xl">Admin</h1>
           <p className="mt-1 text-sm text-muted">
@@ -218,7 +218,7 @@ export default function AdminPage() {
         <div className="flex items-center gap-2">
           <label
             className={[
-              'inline-flex cursor-pointer items-center gap-2 rounded-xl border border-app bg-surface px-3 py-2 text-sm',
+              'dash-tab inline-flex cursor-pointer items-center gap-2 rounded-xl border border-app bg-surface px-3 py-2 text-sm',
               !isAdmin || busy || !storageConfigured
                 ? 'cursor-not-allowed bg-surface2 text-muted'
                 : 'text-app hover:bg-surface2',
@@ -238,7 +238,7 @@ export default function AdminPage() {
           <button
             type="button"
             onClick={() => downloadJson('tarefas-globais.json', envelope)}
-            className="inline-flex items-center gap-2 rounded-xl border border-app bg-surface px-3 py-2 text-sm text-app hover:bg-surface2"
+            className="dash-tab inline-flex items-center gap-2 rounded-xl border border-app bg-surface px-3 py-2 text-sm text-app hover:bg-surface2"
           >
             <Download className="h-4 w-4" />
             Exportar
@@ -246,7 +246,7 @@ export default function AdminPage() {
         </div>
       </div>
 
-      <div className="mt-4 rounded-2xl border border-app bg-surface p-4">
+      <div className="dash-card dash-enter mt-4 rounded-2xl border border-app bg-surface p-4" style={{ animationDelay: '40ms' }}>
         <div className="text-sm font-semibold text-app">Senha do admin</div>
         <p className="mt-1 text-xs text-muted">
           {source === 'api'
@@ -267,7 +267,7 @@ export default function AdminPage() {
             <button
               type="button"
               onClick={() => setAdminPassword('')}
-              className="h-10 shrink-0 rounded-xl border border-app bg-surface px-3 text-sm font-medium text-app hover:bg-surface2"
+              className="dash-tab h-10 shrink-0 rounded-xl border border-app bg-surface px-3 text-sm font-medium text-app hover:bg-surface2"
             >
               Sair
             </button>
@@ -288,7 +288,7 @@ export default function AdminPage() {
         ) : null}
       </div>
 
-      <div className="mt-4 rounded-2xl border border-app bg-surface p-4">
+      <div className="dash-card dash-enter mt-4 rounded-2xl border border-app bg-surface p-4" style={{ animationDelay: '90ms' }}>
         <div className="text-sm font-semibold text-app">Adicionar tarefa global</div>
         <p className="mt-1 text-xs text-muted">
           Ao salvar, este painel atualiza um rascunho local. Para valer para todos, exporte e substitua `public/tarefas-globais.json` no repo (commit + deploy).
@@ -368,7 +368,7 @@ export default function AdminPage() {
             type="submit"
             disabled={!isAdmin || busy || !storageConfigured}
             className={[
-              'inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium',
+              'dash-tab inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium',
               !isAdmin || busy || !storageConfigured
                 ? 'cursor-not-allowed bg-surface2 text-muted'
                 : 'btn-primary',
@@ -381,8 +381,8 @@ export default function AdminPage() {
       </div>
 
       <div className="mt-4 space-y-3">
-        {tasksSorted.map((t) => (
-          <div key={t.id} className="rounded-2xl border border-app bg-surface p-4">
+        {tasksSorted.map((t, index) => (
+          <div key={t.id} className="dash-card dash-enter rounded-2xl border border-app bg-surface p-4" style={{ animationDelay: `${index * 45}ms` }}>
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
@@ -413,7 +413,7 @@ export default function AdminPage() {
                   disabled={!isAdmin || busy || !storageConfigured}
                   onClick={() => openEdit(t)}
                   className={[
-                    'inline-flex h-9 w-9 items-center justify-center rounded-xl border border-app bg-surface text-app',
+                    'dash-tab inline-flex h-9 w-9 items-center justify-center rounded-xl border border-app bg-surface text-app',
                     !isAdmin || busy || !storageConfigured
                       ? 'cursor-not-allowed opacity-60'
                       : 'hover:bg-surface2',
@@ -427,7 +427,7 @@ export default function AdminPage() {
                   disabled={!isAdmin || busy || !storageConfigured}
                   onClick={() => onDelete(t.id)}
                   className={[
-                    'inline-flex h-9 w-9 items-center justify-center rounded-xl border border-app bg-surface text-app',
+                    'dash-tab inline-flex h-9 w-9 items-center justify-center rounded-xl border border-app bg-surface text-app',
                     !isAdmin || busy || !storageConfigured
                       ? 'cursor-not-allowed opacity-60'
                       : 'hover:bg-surface2',
@@ -442,21 +442,21 @@ export default function AdminPage() {
         ))}
 
         {tasksSorted.length === 0 ? (
-          <div className="rounded-2xl border border-app bg-surface p-4 text-sm text-muted">
+          <div className="dash-enter rounded-2xl border border-app bg-surface p-4 text-sm text-muted">
             Nenhuma tarefa global cadastrada.
           </div>
         ) : null}
       </div>
 
       {editOpen ? (
-        <div className="fixed inset-0 z-30 flex items-end justify-center bg-black/40 p-4 md:items-center">
-          <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-app bg-surface shadow-xl">
+        <div className="dash-overlay-in fixed inset-0 z-30 flex items-end justify-center bg-black/40 p-4 md:items-center">
+          <div className="dash-modal-in w-full max-w-lg overflow-hidden rounded-2xl border border-app bg-surface shadow-xl">
             <div className="flex items-center justify-between border-b border-app px-4 py-3">
               <div className="text-sm font-semibold text-app">Editar tarefa global</div>
               <button
                 type="button"
                 onClick={closeEdit}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-app bg-surface text-app hover:bg-surface2"
+                className="dash-tab inline-flex h-9 w-9 items-center justify-center rounded-xl border border-app bg-surface text-app hover:bg-surface2"
                 aria-label="Fechar"
               >
                 <X className="h-4 w-4" />
@@ -525,7 +525,7 @@ export default function AdminPage() {
                 type="submit"
                 disabled={!isAdmin || busy || !storageConfigured}
                 className={[
-                  'h-10 w-full rounded-xl text-sm font-medium',
+                  'dash-tab h-10 w-full rounded-xl text-sm font-medium',
                   !isAdmin || busy || !storageConfigured
                     ? 'cursor-not-allowed bg-surface2 text-muted'
                     : 'btn-primary',

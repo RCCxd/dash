@@ -217,7 +217,7 @@ export default function DashboardPage() {
         <button
           type="button"
           onClick={() => openNew(activeSubjectInfo?.key && activeSubjectInfo.key !== '__none__' ? activeSubjectInfo.label : '')}
-          className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium btn-primary"
+          className="dash-tab inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium btn-primary"
         >
           <Plus className="h-4 w-4" />
           Nova tarefa
@@ -507,7 +507,7 @@ export default function DashboardPage() {
                 </select>
               </label>
 
-              <button type="submit" className="h-10 w-full rounded-xl text-sm font-medium btn-primary">
+              <button type="submit" className="dash-tab h-10 w-full rounded-xl text-sm font-medium btn-primary">
                 Salvar
               </button>
             </form>
