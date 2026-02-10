@@ -1,6 +1,26 @@
 {
   "tasks": [
     {
+      "id": "c619542c-60d2-42b0-ae0b-a61900da5632",
+      "subject": "História",
+      "title": "Atividades Mod 5",
+      "description": "",
+      "dueDate": "2026-02-16",
+      "priority": "medium",
+      "createdAt": 1770756891546,
+      "updatedAt": 1770756891546
+    },
+    {
+      "id": "b3ba5f15-395b-4c8f-8333-de11cba370b4",
+      "subject": "História",
+      "title": "Atividades Mod 5",
+      "description": "pg. 651",
+      "dueDate": "2026-02-10",
+      "priority": "medium",
+      "createdAt": 1770756858025,
+      "updatedAt": 1770756858025
+    },
+    {
       "id": "5faa986f-b424-4a50-99b0-fe82a3c1cd71",
       "subject": "Matemática",
       "title": "Resumo",
@@ -45,30 +65,30 @@
       "subject": "Física",
       "title": "Atividade no Modulo 6",
       "description": "PG. 427. Questões: 1, 3, 4, 5, 6, 7, 8, 10",
-      "dueDate": "2026-02-10",
+      "dueDate": "2026-02-12",
       "priority": "medium",
       "createdAt": 1770328626208,
-      "updatedAt": 1770562103608
+      "updatedAt": 1770756768601
     },
     {
       "id": "9b437682-52a3-48c6-ae41-2c7a9a5b9fc1",
       "subject": "Física",
       "title": "Atividade no Modulo 6",
       "description": "PG. 392, questões: 1 a 6",
-      "dueDate": "2026-02-10",
+      "dueDate": "2026-02-12",
       "priority": "medium",
       "createdAt": 1770328584991,
-      "updatedAt": 1770562113084
+      "updatedAt": 1770756777982
     },
     {
       "id": "7e3d5b2b-2a1b-40f1-8b05-1432c7c6070c",
       "subject": "Itinerário Humanas",
       "title": "Apresentação sobre seu período historico",
       "description": "",
-      "dueDate": "2026-02-10",
+      "dueDate": "2026-02-24",
       "priority": "high",
       "createdAt": 1770328503011,
-      "updatedAt": 1770328503011
+      "updatedAt": 1770756743760
     },
     {
       "id": "8c25f9d2-ab8e-4da6-80c2-9595367fb01f",
