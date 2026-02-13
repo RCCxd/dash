@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { GlobalDataContext } from './globalDataContext.js'
 import { getStoredJSON, setStoredJSON } from '../../utils/storage.js'
+import { useAccess } from '../access/accessContext.js'
 
 const ADMIN_PASSWORD_KEY = 'studentDashboard.adminPassword.v1'
 const ADMIN_PASSWORD_SESSION_KEY = 'studentDashboard.adminPassword.session.v1'
@@ -58,6 +59,11 @@ async function tryLoadGlobalTasksFromApi(adminPassword) {
 
   const resp = await fetch('/api/global-data', { cache: 'no-store', headers })
   if (resp.status === 404) return null
+  if (resp.status === 401) {
+    const e = new Error('Sessao invalida. Faca login novamente.')
+    e.code = 'UNAUTHORIZED'
+    throw e
+  }
 
   const data = await resp.json().catch(() => null)
   if (!resp.ok) {
@@ -101,6 +107,7 @@ async function saveGlobalTasksToApi(nextEnvelope, adminPassword) {
 }
 
 export function GlobalDataProvider({ children }) {
+  const { refresh: refreshAccess } = useAccess()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [tasks, setTasks] = useState(null)
@@ -140,6 +147,9 @@ export function GlobalDataProvider({ children }) {
       setAdminOk(false)
       setSource('json')
     } catch (e) {
+      if (e?.code === 'UNAUTHORIZED') {
+        await refreshAccess()
+      }
       const fallback = localDefaults()
       const localDraft = getStoredJSON(GLOBAL_TASKS_DRAFT_KEY, null)
       setTasks(localDraft ? normalizeEnvelope(localDraft) : fallback.tasks)
@@ -154,7 +164,7 @@ export function GlobalDataProvider({ children }) {
     } finally {
       setLoading(false)
     }
-  }, [adminPassword])
+  }, [adminPassword, refreshAccess])
 
   useEffect(() => {
     reload()

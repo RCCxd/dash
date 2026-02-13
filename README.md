@@ -1,21 +1,23 @@
-# Dashboard do Estudante (Organização Escolar)
+﻿# Dashboard do Estudante (Organizacao Escolar)
 
-Aplicação Web (SPA) para substituir planilhas: **tarefas** e **rotina semanal**.
+Aplicacao Web (SPA) para substituir planilhas: **tarefas** e **rotina semanal**.
 
 ## Stack
 
 - React + Vite
-- Tailwind CSS (UI responsiva + temas)
-- Lucide-React (ícones)
-- Persistência por usuário: React Context + `localStorage`
-- Tarefas globais (para todos): arquivo versionado `public/tarefas-globais.json`
+- Tailwind CSS
+- Lucide-React
+- Persistencia por usuario: React Context + `localStorage`
+- Tarefas globais (todos): `public/tarefas-globais.json` e/ou `/api/global-data`
+- API serverless (`/api/*`) com opcao de autenticacao por assinatura
 
 ## Funcionalidades
 
-- **Dashboard & Tarefas**: tarefas globais (criadas pelo admin) + tarefas pessoais (editáveis) + filtros + cada usuário marca como concluída no próprio dispositivo.
-- **Rotina**: grade semanal manual e local (cada pessoa monta a própria rotina no dispositivo).
-- **Configurações**: tema (Marista/Claro/Escuro/Personalizado com HEX), fonte, contraste e outras opções.
-- **Admin (no site)**: em **Configurações**, defina qualquer senha para liberar o menu **Admin** (neste dispositivo) e gerenciar/importar/exportar tarefas globais.
+- **Dashboard & Tarefas**: tarefas globais + tarefas pessoais + filtros.
+- **Rotina**: grade semanal manual por usuario.
+- **Configuracoes**: tema, fonte, contraste e preferencias.
+- **Admin**: gestao de tarefas globais protegida por `ADMIN_PASSWORD`.
+- **Acesso por assinatura**: login obrigatorio no dashboard com sessao por cookie HTTP-only.
 
 ## Rodar localmente
 
@@ -33,23 +35,62 @@ npm run preview
 
 ## Deploy no Vercel
 
-- **Build command**: `npm run build`
-- **Output directory**: `dist`
-- SPA routing e `/api/*` configurados em `vercel.json`.
+- Build command: `npm run build`
+- Output directory: `dist`
+- SPA routing e `/api/*` ja configurados em `vercel.json`.
 
-Se o build falhar com exit `126`, faça redeploy com **Clear build cache** (ou deixe o `prebuild` corrigir permissões de executáveis em `node_modules`).
+## Assinatura mensal (controle de acesso)
 
-## Fluxo de tarefas globais (manual)
+### Como funciona
 
-1) Abra **Configurações → Admin** e edite as tarefas globais.
-2) Clique em **Exportar** (ou deixe o auto-download ativado) para gerar `tarefas-globais.json`.
-3) Substitua o arquivo `public/tarefas-globais.json` pelo exportado e dê commit.
-4) Faça deploy. A nova versão passa a valer para todos.
+- O frontend bloqueia o app ate autenticar em `/api/access`.
+- A API cria sessao em cookie HTTP-only.
+- Cada conta permite **1 sessao ativa por vez**.
+- Se a mesma conta logar em outro dispositivo, a sessao anterior e invalidada.
+
+### Variaveis de ambiente
+
+Use `SUBSCRIPTIONS_JSON` para cadastrar assinantes:
+
+```json
+[
+  {
+    "id": "cliente-001",
+    "name": "Cliente 1",
+    "username": "cliente1",
+    "password": "senha-forte",
+    "expiresAt": "2026-03-12T23:59:59.000Z",
+    "active": true,
+    "singleUsePassword": false
+  }
+]
+```
+
+Opcionalmente, voce pode usar `passwordHash` (sha256 de `ACCESS_PASSWORD_PEPPER:senha`) no lugar de `password`.
+
+Variaveis suportadas:
+
+- `ACCESS_CONTROL_ENABLED`: `true/false` (se nao definir, ativa automaticamente quando houver assinantes configurados)
+- `SUBSCRIPTIONS_JSON`: lista de contas com username/senha e validade
+- `ACCESS_PASSWORD_PEPPER`: segredo extra para hash das senhas
+- `ACCESS_SESSION_HOURS`: validade da sessao (padrao `24`)
+- `ACCESS_BIND_USER_AGENT`: `true/false` para amarrar sessao ao user-agent (padrao `true`)
+- `ACCESS_SESSION_COOKIE`: nome do cookie de sessao (padrao `dash_access_session`)
+- `singleUsePassword` (por assinante): se `true`, a senha funciona apenas no primeiro login
+
+Fallback para conta unica:
+
+- `ACCESS_USERNAME` (ou `ACCESS_EMAIL` para retrocompatibilidade)
+- `ACCESS_PASSWORD`
+- `ACCESS_EXPIRES_AT` (opcional)
 
 ## Dados (localStorage)
 
-- Usuário (tarefas): `studentDashboard.taskStatusById.v1`
-- Usuário (tarefas pessoais): `studentDashboard.userTasks.v1`
-- Usuário (rotina): `studentDashboard.userRoutine.v1`
-- Configurações: `studentDashboard.settings.v1`
-- Senha admin (neste dispositivo): `studentDashboard.adminPassword.v1`
+- Usuario (tarefas): `studentDashboard.taskStatusById.v1`
+- Usuario (tarefas pessoais): `studentDashboard.userTasks.v1`
+- Usuario (rotina): `studentDashboard.userRoutine.v1`
+- Configuracoes: `studentDashboard.settings.v1`
+
+## Observacao importante
+
+Nao existe protecao 100% impossivel de compartilhar na web. O que este projeto implementa e um bloqueio forte de uso compartilhado via sessao unica ativa + expiracao de assinatura no backend.

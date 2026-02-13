@@ -4,6 +4,7 @@ import { Check, Palette, RotateCcw, Shield, Sliders } from 'lucide-react'
 import { useSettings } from '../state/settings/settingsContext.js'
 import { useGlobalData } from '../state/global/globalDataContext.js'
 import { normalizeHex } from '../utils/colors.js'
+import { useAccess } from '../state/access/accessContext.js'
 
 function Section({ icon, title, description, children, delay = 0 }) {
   return (
@@ -92,6 +93,7 @@ function HexPicker({ label, value, onChange }) {
 
 export default function SettingsPage() {
   const { settings, updateSettings, resetSettings } = useSettings()
+  const { authEnabled, account, logout } = useAccess()
   const {
     isAdmin,
     adminPassword,
@@ -237,6 +239,24 @@ export default function SettingsPage() {
           title="Administracao"
           description="Nao Mexa."
         >
+          {authEnabled ? (
+            <div className="dash-card mb-4 rounded-2xl border border-app bg-surface p-4">
+              <div className="text-sm font-semibold text-app">Conta da assinatura</div>
+              <p className="mt-1 text-xs text-muted">
+                Sessao ativa para: {account?.username || 'conta autenticada'}
+              </p>
+              <div className="mt-3 flex items-center justify-end">
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="dash-tab inline-flex items-center gap-2 rounded-xl border border-app bg-surface px-3 py-2 text-sm text-app hover:bg-surface2"
+                >
+                  Sair da assinatura
+                </button>
+              </div>
+            </div>
+          ) : null}
+
           <div className="dash-card rounded-2xl border border-app bg-surface p-4">
             <div className="text-sm font-semibold text-app">Senha do admin</div>
             <p className="mt-1 text-xs text-muted">
