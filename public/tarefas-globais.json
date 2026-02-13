@@ -1,14 +1,24 @@
 {
   "tasks": [
     {
+      "id": "a80df89a-bbd2-4ac1-b361-e00fe1069214",
+      "subject": "Matemática",
+      "title": "Atividades no Livro Mod 5",
+      "description": "PG. 145; Questões 1 e 2",
+      "dueDate": "2026-02-20",
+      "priority": "medium",
+      "createdAt": 1770991590975,
+      "updatedAt": 1770991590975
+    },
+    {
       "id": "c619542c-60d2-42b0-ae0b-a61900da5632",
       "subject": "História",
       "title": "Atividades Mod 5",
-      "description": "",
-      "dueDate": "2026-02-16",
+      "description": "PG. 652 a 655",
+      "dueDate": "2026-02-23",
       "priority": "medium",
       "createdAt": 1770756891546,
-      "updatedAt": 1770756891546
+      "updatedAt": 1770991617919
     },
     {
       "id": "b3ba5f15-395b-4c8f-8333-de11cba370b4",
@@ -105,10 +115,10 @@
       "subject": "Itinerário Linguagens",
       "title": "Atividade no Caderno",
       "description": "",
-      "dueDate": "2026-02-16",
+      "dueDate": "2026-02-23",
       "priority": "medium",
       "createdAt": 1770328402323,
-      "updatedAt": 1770328402323
+      "updatedAt": 1770991480733
     },
     {
       "id": "d9a0c558-3a3e-4f63-92f5-035c69ae0ed3",
