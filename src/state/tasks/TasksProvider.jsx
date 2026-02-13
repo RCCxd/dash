@@ -25,6 +25,10 @@ function normalizeTask(input, source) {
 
 function sortTasks(list) {
   return [...list].sort((a, b) => {
+    const aDone = a.status === 'done'
+    const bDone = b.status === 'done'
+    if (aDone !== bDone) return aDone ? 1 : -1
+
     const ad = a.dueDate || '9999-12-31'
     const bd = b.dueDate || '9999-12-31'
     if (ad < bd) return -1

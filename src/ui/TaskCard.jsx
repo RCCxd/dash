@@ -22,8 +22,8 @@ function priorityLabel(priority) {
 
 export default function TaskCard({ task, readOnly = false, onEdit, onDelete, onToggleDone }) {
   const due = formatDueDateLabel(task.dueDate)
-  const priority = priorityLabel(task.effectivePriority || task.priority)
   const done = task.status === 'done'
+  const priority = done ? null : priorityLabel(task.effectivePriority || task.priority)
   const canToggle = typeof onToggleDone === 'function'
 
   return (
@@ -36,7 +36,7 @@ export default function TaskCard({ task, readOnly = false, onEdit, onDelete, onT
                 {task.subject}
               </Pill>
             ) : null}
-            <Pill className={priority.cls}>Prioridade: {priority.text}</Pill>
+            {priority ? <Pill className={priority.cls}>Prioridade: {priority.text}</Pill> : null}
             <Pill
               className={
                 done
