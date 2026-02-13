@@ -4,6 +4,8 @@
   :root {
     /* fallback (tema é aplicado via SettingsProvider) */
     color-scheme: dark;
+    --font-base: "JetBrainsMono Nerd Font", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+      Consolas, "Liberation Mono", "Courier New", monospace;
     --bg: #071629;
     --surface: #0b1f35;
     --surface2: #0f2a46;
@@ -34,7 +36,15 @@
   body {
     background-color: var(--bg);
     color: var(--text);
+    font-family: var(--font-base);
     @apply antialiased;
+  }
+
+  input,
+  button,
+  textarea,
+  select {
+    font: inherit;
   }
 }
 
