@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AccessContext } from './accessContext.js'
 
 const DEVICE_ID_KEY = 'studentDashboard.deviceId.v1'
@@ -48,6 +48,11 @@ export function AccessProvider({ children }) {
   const [authenticated, setAuthenticated] = useState(false)
   const [account, setAccount] = useState(null)
   const [error, setError] = useState('')
+  const authSnapshotRef = useRef({ authenticated: false })
+
+  useEffect(() => {
+    authSnapshotRef.current = { authenticated: Boolean(authenticated) }
+  }, [authenticated])
 
   const refresh = useCallback(async () => {
     setError('')
@@ -66,6 +71,14 @@ export function AccessProvider({ children }) {
       }
 
       const data = await parseJson(resp)
+      if (resp.status === 401 || resp.status === 403) {
+        setAuthEnabled(true)
+        setAuthenticated(false)
+        setAccount(null)
+        setError(data?.error || 'Sessao invalida. Faca login novamente.')
+        return
+      }
+
       if (!resp.ok || !data?.ok) {
         throw new Error(data?.error || `Falha ao validar sessao (HTTP ${resp.status}).`)
       }
@@ -76,6 +89,13 @@ export function AccessProvider({ children }) {
       setAuthenticated(isAuthed)
       setAccount(data.account || null)
     } catch (e) {
+      if (authSnapshotRef.current.authenticated) {
+        setError(
+          `Falha temporaria ao validar sessao. Mantendo acesso enquanto o deploy estabiliza. (${e?.message || String(e)})`,
+        )
+        return
+      }
+
       setAuthEnabled(true)
       setAuthenticated(false)
       setAccount(null)
