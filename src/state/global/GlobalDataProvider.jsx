@@ -34,7 +34,7 @@ async function loadGlobalTasksFromJson() {
 }
 
 async function tryLoadGlobalTasksFromApi() {
-  const resp = await fetch('/api/global-data', { cache: 'no-store' })
+  const resp = await fetch('/api/global-data', { cache: 'no-store', credentials: 'include' })
   if (resp.status === 404) return null
   if (resp.status === 401) {
     const e = new Error('Sessao invalida. Faca login novamente.')
@@ -63,6 +63,7 @@ async function saveGlobalTasksToApi(nextEnvelope) {
 
   const resp = await fetch('/api/global-data', {
     method: 'PUT',
+    credentials: 'include',
     headers,
     body: JSON.stringify({ tasks: nextEnvelope }),
   })

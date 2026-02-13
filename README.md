@@ -73,6 +73,7 @@ Variaveis suportadas:
 - `ACCESS_CONTROL_ENABLED`: `true/false` (se nao definir, ativa automaticamente quando houver assinantes configurados)
 - `SUBSCRIPTIONS_JSON`: lista de contas com username/senha e validade
 - `ACCESS_PASSWORD_PEPPER`: segredo extra para hash das senhas
+- `ACCESS_SESSION_SECRET`: segredo usado para assinar cookie de sessao (recomendado em producao)
 - `ACCESS_SESSION_HOURS`: validade da sessao (padrao `24`)
 - `ACCESS_BIND_USER_AGENT`: `true/false` para amarrar sessao ao user-agent (padrao `true`)
 - `ACCESS_SESSION_COOKIE`: nome do cookie de sessao (padrao `dash_access_session`)

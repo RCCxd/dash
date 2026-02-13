@@ -1,10 +1,13 @@
 ﻿const crypto = require('crypto')
 
 const SESSION_COOKIE = process.env.ACCESS_SESSION_COOKIE || 'dash_access_session'
+const TOKEN_COOKIE = process.env.ACCESS_TOKEN_COOKIE || 'dash_access_token'
 const KEY_SESSION_PREFIX = 'access.session.v1'
 const KEY_ACTIVE_SESSION_PREFIX = 'access.active.v1'
 const KEY_PASSWORD_USED_PREFIX = 'access.password.used.v1'
 const PASSWORD_PEPPER = process.env.ACCESS_PASSWORD_PEPPER || ''
+const SESSION_SIGNING_SECRET =
+  process.env.ACCESS_SESSION_SECRET || process.env.ACCESS_PASSWORD_PEPPER || 'dev-access-session-secret'
 
 function boolFromEnv(name, fallback) {
   const raw = process.env[name]
@@ -86,9 +89,22 @@ function setSessionCookie(res, sessionId, maxAgeSeconds) {
   )
 }
 
+function setTokenCookie(res, token, maxAgeSeconds) {
+  const secure = process.env.VERCEL || process.env.NODE_ENV === 'production' ? '; Secure' : ''
+  appendSetCookie(
+    res,
+    `${TOKEN_COOKIE}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${Math.max(0, Math.floor(maxAgeSeconds || 0))}${secure}`,
+  )
+}
+
 function clearSessionCookie(res) {
   const secure = process.env.VERCEL || process.env.NODE_ENV === 'production' ? '; Secure' : ''
   appendSetCookie(res, `${SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure}`)
+  appendSetCookie(res, `${TOKEN_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure}`)
+}
+
+function canUseSharedSessionStore(store) {
+  return Boolean(store && store.kind && store.kind !== 'file-tmp')
 }
 
 function sessionKey(sessionId) {
@@ -117,6 +133,51 @@ function toIso(input) {
 
 function hash(input) {
   return crypto.createHash('sha256').update(String(input)).digest('hex')
+}
+
+function base64UrlEncode(value) {
+  return Buffer.from(String(value), 'utf8')
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/g, '')
+}
+
+function base64UrlDecode(value) {
+  const input = String(value || '')
+    .replace(/-/g, '+')
+    .replace(/_/g, '/')
+  const pad = input.length % 4
+  const normalized = pad ? input + '='.repeat(4 - pad) : input
+  return Buffer.from(normalized, 'base64').toString('utf8')
+}
+
+function signToken(unsignedToken) {
+  return crypto.createHmac('sha256', SESSION_SIGNING_SECRET).update(unsignedToken).digest('base64url')
+}
+
+function createSessionToken(payload) {
+  const encoded = base64UrlEncode(JSON.stringify(payload || {}))
+  const signature = signToken(encoded)
+  return `${encoded}.${signature}`
+}
+
+function parseSessionToken(token) {
+  const raw = String(token || '')
+  const dot = raw.lastIndexOf('.')
+  if (dot <= 0) return null
+  const encoded = raw.slice(0, dot)
+  const signature = raw.slice(dot + 1)
+  const expected = signToken(encoded)
+  if (!constantTimeEqual(signature, expected)) return null
+
+  try {
+    const parsed = JSON.parse(base64UrlDecode(encoded))
+    if (!parsed || typeof parsed !== 'object') return null
+    return parsed
+  } catch {
+    return null
+  }
 }
 
 function hashPassword(password) {
@@ -288,8 +349,10 @@ async function createSession(store, account, deviceId, userAgent) {
     userAgentHash: hash(userAgent || ''),
   }
 
-  await store.set(sessionKey(sessionId), session)
-  await store.set(activeSessionKey(account.id), sessionId)
+  if (canUseSharedSessionStore(store)) {
+    await store.set(sessionKey(sessionId), session)
+    await store.set(activeSessionKey(account.id), sessionId)
+  }
   return session
 }
 
@@ -306,11 +369,25 @@ async function invalidateSession(store, sessionId) {
 }
 
 async function getSessionFromRequest(req, store) {
-  const sid = cookieMap(req)[SESSION_COOKIE]
-  if (!sid) return null
-  const loaded = await store.get(sessionKey(sid))
-  if (!loaded || typeof loaded !== 'object') return null
-  return { ...loaded, id: sid }
+  const cookies = cookieMap(req)
+  const sid = cookies[SESSION_COOKIE]
+  if (sid && canUseSharedSessionStore(store)) {
+    const loaded = await store.get(sessionKey(sid))
+    if (loaded && typeof loaded === 'object') return { ...loaded, id: sid, isStateless: false }
+  }
+
+  const token = cookies[TOKEN_COOKIE]
+  const parsed = parseSessionToken(token)
+  if (!parsed) return null
+
+  return {
+    id: String(parsed.sid || ''),
+    accountId: String(parsed.aid || ''),
+    username: normalizeUsername(parsed.usr),
+    expiresAt: toIso(parsed.exp) || null,
+    userAgentHash: String(parsed.uah || ''),
+    isStateless: true,
+  }
 }
 
 async function accountByIdOrUsername(accountId, username) {
@@ -329,23 +406,25 @@ async function validateSession(req, store) {
   if (!session) return { ok: false, reason: 'NO_SESSION' }
 
   if (isExpired(session.expiresAt)) {
-    await invalidateSession(store, session.id)
+    if (!session.isStateless) await invalidateSession(store, session.id)
     return { ok: false, reason: 'SESSION_EXPIRED' }
   }
 
   const account = await accountByIdOrUsername(session.accountId, session.username)
   if (!account || !account.active) {
-    await invalidateSession(store, session.id)
+    if (!session.isStateless) await invalidateSession(store, session.id)
     return { ok: false, reason: 'ACCOUNT_INACTIVE' }
   }
   if (isExpired(account.expiresAt)) {
-    await invalidateSession(store, session.id)
+    if (!session.isStateless) await invalidateSession(store, session.id)
     return { ok: false, reason: 'SUBSCRIPTION_EXPIRED' }
   }
 
-  const active = await store.get(activeSessionKey(account.id))
-  if (String(active || '') !== String(session.id)) {
-    return { ok: false, reason: 'SESSION_REPLACED' }
+  if (!session.isStateless && canUseSharedSessionStore(store)) {
+    const active = await store.get(activeSessionKey(account.id))
+    if (String(active || '') !== String(session.id)) {
+      return { ok: false, reason: 'SESSION_REPLACED' }
+    }
   }
 
   if (shouldBindUserAgent()) {
@@ -362,7 +441,9 @@ async function validateSession(req, store) {
     lastSeenAt: new Date().toISOString(),
     expiresAt: nextExpiry,
   }
-  await store.set(sessionKey(session.id), nextSession)
+  if (!session.isStateless && canUseSharedSessionStore(store)) {
+    await store.set(sessionKey(session.id), nextSession)
+  }
   return { ok: true, session: nextSession, account }
 }
 
@@ -407,7 +488,15 @@ async function loginWithCredentials(req, res, store, body) {
   const session = await createSession(store, verified.account, deviceId, getClientUserAgent(req))
   const expiryMs = new Date(session.expiresAt).getTime()
   const maxAgeSeconds = Math.max(0, Math.floor((expiryMs - Date.now()) / 1000))
+  const token = createSessionToken({
+    sid: session.id,
+    aid: session.accountId,
+    usr: session.username,
+    exp: session.expiresAt,
+    uah: session.userAgentHash,
+  })
   setSessionCookie(res, session.id, maxAgeSeconds)
+  setTokenCookie(res, token, maxAgeSeconds)
 
   return {
     ok: true,
