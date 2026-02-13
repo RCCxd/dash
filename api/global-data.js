@@ -21,6 +21,16 @@ function getConfiguredAdminPassword() {
   return v && String(v).trim() ? String(v).trim() : ''
 }
 
+function getAllowedAdminUsername() {
+  const v = process.env.ADMIN_ALLOWED_USERNAME
+  if (v && String(v).trim()) return String(v).trim()
+  return 'RCCxd'
+}
+
+function normalizeUsername(input) {
+  return String(input || '').trim().toLowerCase()
+}
+
 function readHeader(req, name) {
   const headers = req.headers || {}
   const target = String(name).toLowerCase()
@@ -30,7 +40,11 @@ function readHeader(req, name) {
   return undefined
 }
 
-function isAdminAuthorized(req) {
+function isAdminAuthorized(req, accessState) {
+  const requiredUsername = normalizeUsername(getAllowedAdminUsername())
+  const requesterUsername = normalizeUsername(accessState?.account?.username)
+  if (!requiredUsername || requesterUsername !== requiredUsername) return false
+
   const configured = getConfiguredAdminPassword()
   if (!configured) return false
   const provided = readHeader(req, 'x-admin-password')
@@ -85,7 +99,8 @@ module.exports = async (req, res) => {
         storageConfigured,
         store: store.kind,
         authRequired: adminPasswordConfigured,
-        adminOk: adminPasswordConfigured ? isAdminAuthorized(req) : false,
+        adminOk: adminPasswordConfigured ? isAdminAuthorized(req, access.state) : false,
+        adminUser: getAllowedAdminUsername(),
       })
     }
 
@@ -102,13 +117,13 @@ module.exports = async (req, res) => {
         )
       }
 
-      if (!isAdminAuthorized(req)) {
+      if (!isAdminAuthorized(req, access.state)) {
         return json(
           res,
           {
             ok: false,
             error:
-              'Nao autorizado. Envie o header x-admin-password (e configure ADMIN_PASSWORD no deploy).',
+              `Nao autorizado. Apenas o usuario ${getAllowedAdminUsername()} com x-admin-password valido pode editar.`,
           },
           401,
         )
@@ -128,7 +143,8 @@ module.exports = async (req, res) => {
         storageConfigured,
         store: store.kind,
         authRequired: adminPasswordConfigured,
-        adminOk: adminPasswordConfigured ? isAdminAuthorized(req) : false,
+        adminOk: adminPasswordConfigured ? isAdminAuthorized(req, access.state) : false,
+        adminUser: getAllowedAdminUsername(),
       })
     }
 
