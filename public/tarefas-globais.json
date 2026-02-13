@@ -1,16 +1,6 @@
 {
   "tasks": [
     {
-      "id": "2c525d7c-a819-4b51-aa80-937677194726",
-      "subject": "benicio teste",
-      "title": "quigger",
-      "description": "aaaaaaaaaaaaaaaa",
-      "dueDate": "2026-02-14",
-      "priority": "medium",
-      "createdAt": 1770994591433,
-      "updatedAt": 1770994591433
-    },
-    {
       "id": "a80df89a-bbd2-4ac1-b361-e00fe1069214",
       "subject": "Matemática",
       "title": "Atividades no Livro Mod 5",
