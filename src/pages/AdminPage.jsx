@@ -49,13 +49,9 @@ export default function AdminPage() {
     tasks: globalTasks,
     updateGlobalTasks,
     isAdmin,
-    authRequired,
-    adminOk,
     storageConfigured,
     storeKind,
     source,
-    adminPassword,
-    setAdminPassword,
   } = useGlobalData()
   const envelope = useMemo(() => normalizeEnvelope(globalTasks), [globalTasks])
   const tasksSorted = useMemo(() => sortGlobalTasks(envelope.tasks), [envelope.tasks])
@@ -243,37 +239,14 @@ export default function AdminPage() {
       </div>
 
       <div className="dash-card dash-enter mt-4 rounded-2xl border border-app bg-surface p-4" style={{ animationDelay: '40ms' }}>
-        <div className="text-sm font-semibold text-app">Senha do admin</div>
+        <div className="text-sm font-semibold text-app">Acesso admin</div>
         <p className="mt-1 text-xs text-muted">
           {source === 'api'
-            ? authRequired
-              ? 'Digite a senha configurada em ADMIN_PASSWORD no backend (somente ela libera salvar/importar).'
-              : 'Backend sem senha (ADMIN_PASSWORD nao configurada).'
+            ? isAdmin
+              ? 'Permissao liberada para este usuario.'
+              : 'Apenas o usuario RCCxd pode salvar/importar tarefas globais.'
             : 'Modo local: alteracoes salvas no navegador e exportaveis em JSON.'}
         </p>
-        <div className="mt-3 flex items-center gap-2">
-          <input
-            type="password"
-            value={adminPassword || ''}
-            onChange={(e) => setAdminPassword(e.target.value)}
-            placeholder={source === 'api' && authRequired ? 'Senha do admin' : 'Senha'}
-            className="h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
-          />
-          {isAdmin ? (
-            <button
-              type="button"
-              onClick={() => setAdminPassword('')}
-              className="dash-tab h-10 shrink-0 rounded-xl border border-app bg-surface px-3 text-sm font-medium text-app hover:bg-surface2"
-            >
-              Sair
-            </button>
-          ) : null}
-        </div>
-        {authRequired && adminPassword && !adminOk ? (
-          <div className="mt-2 text-xs text-red-200">
-            Senha incorreta para este backend. Sem a senha certa voce nao consegue salvar/importar.
-          </div>
-        ) : null}
         <div className="mt-2 text-xs text-muted">
           Base global: {storageConfigured ? storeKind : 'nao configurado'}.
         </div>

@@ -16,11 +16,6 @@ function normalizeEnvelope(envelope) {
   return { ...envelope, tasks }
 }
 
-function getConfiguredAdminPassword() {
-  const v = process.env.ADMIN_PASSWORD
-  return v && String(v).trim() ? String(v).trim() : ''
-}
-
 function getAllowedAdminUsername() {
   const v = process.env.ADMIN_ALLOWED_USERNAME
   if (v && String(v).trim()) return String(v).trim()
@@ -31,24 +26,10 @@ function normalizeUsername(input) {
   return String(input || '').trim().toLowerCase()
 }
 
-function readHeader(req, name) {
-  const headers = req.headers || {}
-  const target = String(name).toLowerCase()
-  for (const [k, v] of Object.entries(headers)) {
-    if (String(k).toLowerCase() === target) return v
-  }
-  return undefined
-}
-
-function isAdminAuthorized(req, accessState) {
+function isAdminAuthorized(accessState) {
   const requiredUsername = normalizeUsername(getAllowedAdminUsername())
   const requesterUsername = normalizeUsername(accessState?.account?.username)
-  if (!requiredUsername || requesterUsername !== requiredUsername) return false
-
-  const configured = getConfiguredAdminPassword()
-  if (!configured) return false
-  const provided = readHeader(req, 'x-admin-password')
-  return Boolean(provided && String(provided).trim() === configured)
+  return Boolean(requiredUsername && requesterUsername === requiredUsername)
 }
 
 function defaultTasks() {
@@ -72,7 +53,6 @@ module.exports = async (req, res) => {
   try {
     const method = req.method || 'GET'
     const store = await getStore()
-    const adminPasswordConfigured = Boolean(getConfiguredAdminPassword())
     const storageConfigured = store.kind !== 'file-tmp'
     const access = await ensureAuthenticatedAccess(req, store)
 
@@ -98,32 +78,20 @@ module.exports = async (req, res) => {
         tasks,
         storageConfigured,
         store: store.kind,
-        authRequired: adminPasswordConfigured,
-        adminOk: adminPasswordConfigured ? isAdminAuthorized(req, access.state) : false,
+        authRequired: false,
+        adminOk: isAdminAuthorized(access.state),
         adminUser: getAllowedAdminUsername(),
       })
     }
 
     if (method === 'PUT') {
-      if (!adminPasswordConfigured) {
+      if (!isAdminAuthorized(access.state)) {
         return json(
           res,
           {
             ok: false,
             error:
-              'ADMIN_PASSWORD nao configurada no backend. Configure para liberar edicao global.',
-          },
-          403,
-        )
-      }
-
-      if (!isAdminAuthorized(req, access.state)) {
-        return json(
-          res,
-          {
-            ok: false,
-            error:
-              `Nao autorizado. Apenas o usuario ${getAllowedAdminUsername()} com x-admin-password valido pode editar.`,
+              `Nao autorizado. Apenas o usuario ${getAllowedAdminUsername()} pode editar tarefas globais.`,
           },
           401,
         )
@@ -142,8 +110,8 @@ module.exports = async (req, res) => {
         tasks: nextTasks,
         storageConfigured,
         store: store.kind,
-        authRequired: adminPasswordConfigured,
-        adminOk: adminPasswordConfigured ? isAdminAuthorized(req, access.state) : false,
+        authRequired: false,
+        adminOk: isAdminAuthorized(access.state),
         adminUser: getAllowedAdminUsername(),
       })
     }

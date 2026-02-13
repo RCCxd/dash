@@ -16,7 +16,7 @@ Aplicacao Web (SPA) para substituir planilhas: **tarefas** e **rotina semanal**.
 - **Dashboard & Tarefas**: tarefas globais + tarefas pessoais + filtros.
 - **Rotina**: grade semanal manual por usuario.
 - **Configuracoes**: tema, fonte, contraste e preferencias.
-- **Admin**: gestao de tarefas globais protegida por `ADMIN_PASSWORD`.
+- **Admin**: gestao de tarefas globais liberada apenas para o `username` permitido.
 - **Acesso por assinatura**: login obrigatorio no dashboard com sessao por cookie HTTP-only.
 
 ## Rodar localmente
@@ -76,6 +76,7 @@ Variaveis suportadas:
 - `ACCESS_SESSION_HOURS`: validade da sessao (padrao `24`)
 - `ACCESS_BIND_USER_AGENT`: `true/false` para amarrar sessao ao user-agent (padrao `true`)
 - `ACCESS_SESSION_COOKIE`: nome do cookie de sessao (padrao `dash_access_session`)
+- `ADMIN_ALLOWED_USERNAME`: username com permissao de admin (padrao `RCCxd`)
 - `singleUsePassword` (por assinante): se `true`, a senha funciona apenas no primeiro login
 
 Fallback para conta unica:

@@ -96,9 +96,6 @@ export default function SettingsPage() {
   const { authEnabled, account, logout } = useAccess()
   const {
     isAdmin,
-    adminPassword,
-    setAdminPassword,
-    authRequired,
     source,
     storageConfigured,
     storeKind,
@@ -258,32 +255,14 @@ export default function SettingsPage() {
           ) : null}
 
           <div className="dash-card rounded-2xl border border-app bg-surface p-4">
-            <div className="text-sm font-semibold text-app">Senha do admin</div>
+            <div className="text-sm font-semibold text-app">Acesso admin</div>
             <p className="mt-1 text-xs text-muted">
               {source === 'api'
-                ? authRequired
-                  ? 'Digite a senha.'
-                  : 'Admin bloqueado. Configure ADMIN_PASSWORD no backend.'
+                ? isAdmin
+                  ? 'Admin liberado para este usuario.'
+                  : 'Apenas o usuario RCCxd pode abrir o admin.'
                 : 'Modo local habilitado.'}
             </p>
-            <div className="mt-3 flex items-center gap-2">
-              <input
-                type="password"
-                value={adminPassword || ''}
-                onChange={(e) => setAdminPassword(e.target.value)}
-                placeholder={source === 'api' && authRequired ? 'Senha do admin' : 'Senha'}
-                className="h-10 w-full rounded-xl border border-app bg-surface px-3 text-sm text-app placeholder:text-muted focus:outline-none"
-              />
-              {isAdmin ? (
-                <button
-                  type="button"
-                  onClick={() => setAdminPassword('')}
-                  className="dash-tab h-10 shrink-0 rounded-xl border border-app bg-surface px-3 text-sm font-medium text-app hover:bg-surface2"
-                >
-                  Sair
-                </button>
-              ) : null}
-            </div>
             <div className="mt-2 text-xs text-muted">
               Base global: {storageConfigured ? storeKind : 'nao configurado'}.
             </div>
