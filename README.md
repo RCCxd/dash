@@ -99,4 +99,4 @@ Fallback para conta unica:
 
 ## Observacao importante
 
-Nao existe protecao 100% impossivel de compartilhar na web. O que este projeto implementa e um bloqueio forte de uso compartilhado via sessao unica ativa + expiracao de assinatura no backend.
+Nao existe protecao 100% impossivel de compartilhar na web. O que este projeto implementa e um bloqueio forte de uso compartilhado via sessao unica ativa + expiracao de assinatura no backend
