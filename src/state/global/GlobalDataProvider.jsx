@@ -151,10 +151,16 @@ export function GlobalDataProvider({ children }) {
         await refreshAccess()
       }
       const fallback = localDefaults()
+      let fallbackJson = null
+      try {
+        fallbackJson = await loadGlobalTasksFromJson()
+      } catch {
+        // ignore and keep defaults
+      }
       const localDraft = getStoredJSON(GLOBAL_TASKS_DRAFT_KEY, null)
-      setTasks(localDraft ? normalizeEnvelope(localDraft) : fallback.tasks)
+      setTasks(localDraft ? normalizeEnvelope(localDraft) : fallbackJson || fallback.tasks)
       setStorageConfigured(true)
-      setStoreKind(localDraft ? 'localStorage' : 'tarefas-globais.json')
+      setStoreKind(localDraft ? 'localStorage' : fallbackJson ? 'tarefas-globais.json' : 'fallback')
       setAuthRequired(false)
       setAdminOk(false)
       setSource('json')
@@ -197,7 +203,7 @@ export function GlobalDataProvider({ children }) {
       source,
       authRequired,
       adminOk,
-      isAdmin: source === 'api' ? !authRequired || Boolean(adminOk) : true,
+      isAdmin: source === 'api' ? Boolean(authRequired && adminOk) : false,
       reload,
       async updateGlobalTasks(nextTasks) {
         const normalized = normalizeEnvelope(nextTasks)

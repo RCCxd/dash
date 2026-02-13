@@ -32,7 +32,7 @@ function readHeader(req, name) {
 
 function isAdminAuthorized(req) {
   const configured = getConfiguredAdminPassword()
-  if (!configured) return true
+  if (!configured) return false
   const provided = readHeader(req, 'x-admin-password')
   return Boolean(provided && String(provided).trim() === configured)
 }
@@ -85,11 +85,23 @@ module.exports = async (req, res) => {
         storageConfigured,
         store: store.kind,
         authRequired: adminPasswordConfigured,
-        adminOk: adminPasswordConfigured ? isAdminAuthorized(req) : true,
+        adminOk: adminPasswordConfigured ? isAdminAuthorized(req) : false,
       })
     }
 
     if (method === 'PUT') {
+      if (!adminPasswordConfigured) {
+        return json(
+          res,
+          {
+            ok: false,
+            error:
+              'ADMIN_PASSWORD nao configurada no backend. Configure para liberar edicao global.',
+          },
+          403,
+        )
+      }
+
       if (!isAdminAuthorized(req)) {
         return json(
           res,
@@ -116,7 +128,7 @@ module.exports = async (req, res) => {
         storageConfigured,
         store: store.kind,
         authRequired: adminPasswordConfigured,
-        adminOk: adminPasswordConfigured ? isAdminAuthorized(req) : true,
+        adminOk: adminPasswordConfigured ? isAdminAuthorized(req) : false,
       })
     }
 

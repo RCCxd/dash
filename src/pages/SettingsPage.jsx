@@ -263,7 +263,7 @@ export default function SettingsPage() {
               {source === 'api'
                 ? authRequired
                   ? 'Digite a senha.'
-                  : 'Backend sem senha.'
+                  : 'Admin bloqueado. Configure ADMIN_PASSWORD no backend.'
                 : 'Modo local habilitado.'}
             </p>
             <div className="mt-3 flex items-center gap-2">
