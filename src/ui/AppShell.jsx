@@ -1,6 +1,6 @@
 import { createElement } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { BookOpenCheck, CalendarCheck2, LayoutDashboard, Settings, Shield } from 'lucide-react'
+import { BookOpenCheck, CalendarCheck2, LayoutDashboard, Settings, Shield, Timer } from 'lucide-react'
 import { useGlobalData } from '../state/global/globalDataContext.js'
 
 function NavItem({ to, icon, label }) {
@@ -28,6 +28,7 @@ export default function AppShell({ children }) {
   const { isAdmin } = useGlobalData()
   const active = location.pathname
   const onDashboard = active === '/'
+  const onStudy = active.startsWith('/estudos')
   const onRoutine = active.startsWith('/rotina')
   const onHerberthSheets = active.startsWith('/fichas-herberth')
   const onSettings = active.startsWith('/configuracoes')
@@ -43,6 +44,7 @@ export default function AppShell({ children }) {
           <p className="mt-1 text-xs text-muted">Tarefas e rotina.</p>
           <nav className="mt-5 space-y-1">
             <NavItem to="/" icon={LayoutDashboard} label="Tarefas" />
+            <NavItem to="/estudos" icon={Timer} label="Estudos" />
             <NavItem to="/rotina" icon={CalendarCheck2} label="Rotina" />
             <NavItem to="/fichas-herberth" icon={BookOpenCheck} label="Fichas de Herberth" />
             <NavItem to="/configuracoes" icon={Settings} label="Configurações" />
@@ -64,6 +66,16 @@ export default function AppShell({ children }) {
           >
             <LayoutDashboard className="h-5 w-5" />
             Tarefas
+          </NavLink>
+          <NavLink
+            to="/estudos"
+            className={[
+              'dash-tab flex flex-1 flex-col items-center gap-1 py-3 text-xs',
+              onStudy ? 'text-app' : 'text-muted',
+            ].join(' ')}
+          >
+            <Timer className="h-5 w-5" />
+            Estudos
           </NavLink>
           <NavLink
             to="/rotina"

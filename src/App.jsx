@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import DashboardPage from './pages/DashboardPage.jsx'
+import StudyHubPage from './pages/StudyHubPage.jsx'
 import RoutinePage from './pages/RoutinePage.jsx'
 import SettingsPage from './pages/SettingsPage.jsx'
 import AdminPage from './pages/AdminPage.jsx'
@@ -14,6 +15,7 @@ export default function App() {
     <AppShell>
       <Routes>
         <Route path="/" element={<DashboardPage />} />
+        <Route path="/estudos" element={<StudyHubPage />} />
         <Route path="/rotina" element={<RoutinePage />} />
         <Route path="/fichas-herberth" element={<HerberthSheetsPage />} />
         <Route path="/configuracoes" element={<SettingsPage />} />

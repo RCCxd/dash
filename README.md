@@ -19,6 +19,22 @@ Aplicacao Web (SPA) para substituir planilhas: **tarefas** e **rotina semanal**.
 - **Admin**: gestao de tarefas globais liberada apenas para o `username` permitido.
 - **Acesso por assinatura**: login obrigatorio no dashboard com sessao por cookie HTTP-only.
 
+## Proximas funcionalidades
+
+- **Pomodoro integrado**: timer para sessoes de estudo com pausas.
+- **Registro de horas estudadas**: contador diario/semanal de tempo investido.
+- **Metas de estudo**: definir e acompanhar objetivos (ex: `estudar 4h por dia`).
+- **Calendario de provas**: alertas e contagem regressiva.
+- **Ranking de materias**: quais voce mais estuda vs. quais precisa focar mais.
+- **Estatisticas semanais**: horas estudadas, tarefas concluidas, etc.
+- **Anotacoes rapidas**: bloco de notas integrado por materia.
+- **Sistema de pontos/badges**: conquistas por metas atingidas.
+- **Streaks de estudo**: dias consecutivos estudando.
+- **Desafios semanais**: metas especificas com recompensas.
+- **Progresso visual**: barras de progresso para cada objetivo.
+- **Resumo do dia**: dashboard inicial com visao geral.
+- **Citacoes motivacionais**: frase do dia para inspirar.
+
 ## Rodar localmente
 
 ```bash
