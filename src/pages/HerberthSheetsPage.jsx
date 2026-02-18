@@ -90,7 +90,7 @@ export default function HerberthSheetsPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 pb-24 pt-4 md:pb-6">
+    <div className="mx-auto w-full max-w-3xl px-4 pb-24 pt-4 md:pb-6 lg:max-w-none">
       <div className="dash-enter">
         <h1 className="text-lg font-semibold tracking-tight text-app md:text-xl">Fichas de Herberth</h1>
         <p className="mt-1 text-sm text-muted">Links para PDFs resolvidos.</p>

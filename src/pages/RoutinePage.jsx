@@ -192,7 +192,7 @@ export default function RoutinePage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 pb-24 pt-4 md:pb-6">
+    <div className="mx-auto w-full max-w-5xl px-4 pb-24 pt-4 md:pb-6 lg:max-w-none">
       <div className="dash-enter flex items-start justify-between gap-3">
         <div>
           <h1 className="text-lg font-semibold tracking-tight text-app md:text-xl">Rotina</h1>
