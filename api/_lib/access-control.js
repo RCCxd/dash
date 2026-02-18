@@ -24,6 +24,17 @@ function getSessionHours() {
   return Math.min(raw, 24 * 30)
 }
 
+function getSingleUseSessionHours() {
+  const raw = Number(process.env.ACCESS_SINGLE_USE_SESSION_HOURS)
+  if (!Number.isFinite(raw) || raw <= 0) return 24 * 365 * 5
+  return Math.min(raw, 24 * 365 * 10)
+}
+
+function getSessionHoursForAccount(account) {
+  if (account?.singleUsePassword) return getSingleUseSessionHours()
+  return getSessionHours()
+}
+
 function normalizeUsername(input) {
   return String(input || '').trim().toLowerCase()
 }
@@ -160,6 +171,26 @@ function createSessionToken(payload) {
   const encoded = base64UrlEncode(JSON.stringify(payload || {}))
   const signature = signToken(encoded)
   return `${encoded}.${signature}`
+}
+
+function tokenPayloadFromSession(session) {
+  return {
+    sid: session.id,
+    aid: session.accountId,
+    usr: session.username,
+    exp: session.expiresAt,
+    uah: session.userAgentHash,
+  }
+}
+
+function applySessionCookies(res, session) {
+  if (!session || !session.id) return
+  const expiryMs = new Date(session.expiresAt).getTime()
+  if (!Number.isFinite(expiryMs)) return
+
+  const maxAgeSeconds = Math.max(0, Math.floor((expiryMs - Date.now()) / 1000))
+  setSessionCookie(res, session.id, maxAgeSeconds)
+  setTokenCookie(res, createSessionToken(tokenPayloadFromSession(session)), maxAgeSeconds)
 }
 
 function parseSessionToken(token) {
@@ -323,9 +354,10 @@ async function findAccountByCredentials(store, usernameInput, passwordInput) {
   return { ok: true, account }
 }
 
-function maxSessionExpiryIso(accountExpiresAt) {
+function maxSessionExpiryIso(account) {
+  const accountExpiresAt = account?.expiresAt
   const now = Date.now()
-  const sessionMs = getSessionHours() * 60 * 60 * 1000
+  const sessionMs = getSessionHoursForAccount(account) * 60 * 60 * 1000
   const sessionEnd = now + sessionMs
   if (!accountExpiresAt) return new Date(sessionEnd).toISOString()
 
@@ -337,7 +369,7 @@ function maxSessionExpiryIso(accountExpiresAt) {
 async function createSession(store, account, deviceId, userAgent) {
   const sessionId = crypto.randomBytes(32).toString('hex')
   const now = new Date().toISOString()
-  const expiresAt = maxSessionExpiryIso(account.expiresAt)
+  const expiresAt = maxSessionExpiryIso(account)
   const session = {
     id: sessionId,
     accountId: account.id,
@@ -435,7 +467,7 @@ async function validateSession(req, store) {
     }
   }
 
-  const nextExpiry = maxSessionExpiryIso(account.expiresAt)
+  const nextExpiry = maxSessionExpiryIso(account)
   const nextSession = {
     ...session,
     lastSeenAt: new Date().toISOString(),
@@ -472,6 +504,7 @@ async function getAccessState(req, store) {
     enabled,
     authenticated: true,
     account: publicAccount(result.account),
+    session: result.session,
     reason: 'OK',
   }
 }
@@ -486,17 +519,7 @@ async function loginWithCredentials(req, res, store, body) {
   await consumePassword(store, verified.account)
 
   const session = await createSession(store, verified.account, deviceId, getClientUserAgent(req))
-  const expiryMs = new Date(session.expiresAt).getTime()
-  const maxAgeSeconds = Math.max(0, Math.floor((expiryMs - Date.now()) / 1000))
-  const token = createSessionToken({
-    sid: session.id,
-    aid: session.accountId,
-    usr: session.username,
-    exp: session.expiresAt,
-    uah: session.userAgentHash,
-  })
-  setSessionCookie(res, session.id, maxAgeSeconds)
-  setTokenCookie(res, token, maxAgeSeconds)
+  applySessionCookies(res, session)
 
   return {
     ok: true,
@@ -523,6 +546,7 @@ async function ensureAuthenticatedAccess(req, store) {
 }
 
 module.exports = {
+  applySessionCookies,
   isAccessControlEnabled,
   readBody,
   getAccessState,

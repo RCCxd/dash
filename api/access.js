@@ -1,5 +1,6 @@
 const { getStore } = require('./_lib/store')
 const {
+  applySessionCookies,
   ensureAuthenticatedAccess,
   getAccessState,
   isAccessControlEnabled,
@@ -22,6 +23,9 @@ module.exports = async (req, res) => {
 
     if (method === 'GET') {
       const state = await getAccessState(req, store)
+      if (state.authenticated && state.session) {
+        applySessionCookies(res, state.session)
+      }
       return json(res, {
         ok: true,
         authEnabled: Boolean(state.enabled),

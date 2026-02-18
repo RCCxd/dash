@@ -91,10 +91,13 @@ Variaveis suportadas:
 - `ACCESS_PASSWORD_PEPPER`: segredo extra para hash das senhas
 - `ACCESS_SESSION_SECRET`: segredo usado para assinar cookie de sessao (obrigatorio manter o mesmo valor entre deploys para nao derrubar sessoes ativas)
 - `ACCESS_SESSION_HOURS`: validade da sessao (padrao `24`)
+- `ACCESS_SINGLE_USE_SESSION_HOURS`: validade da sessao para contas com `singleUsePassword` (padrao `43800`, equivalente a 5 anos)
 - `ACCESS_BIND_USER_AGENT`: `true/false` para amarrar sessao ao user-agent (padrao `true`)
 - `ACCESS_SESSION_COOKIE`: nome do cookie de sessao (padrao `dash_access_session`)
 - `ADMIN_ALLOWED_USERNAME`: username com permissao de admin (padrao `RCCxd`)
 - `singleUsePassword` (por assinante): se `true`, a senha funciona apenas no primeiro login
+
+Observacao: a sessao e renovada automaticamente em chamadas de validacao (`GET /api/access`) para evitar logout inesperado durante uso ativo.
 
 Recomendacao para deploy:
 
