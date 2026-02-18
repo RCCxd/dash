@@ -36,7 +36,7 @@ export default function AppShell({ children }) {
 
   return (
     <div className="min-h-full bg-app bg-app-animated" lang="pt-BR" spellCheck autoCorrect="on">
-      <div className="mx-auto flex w-full max-w-5xl">
+      <div className="mx-auto flex w-full max-w-5xl lg:max-w-none">
         <aside className="dash-enter hidden w-64 shrink-0 border-r border-app px-4 py-6 md:block" style={{ animationDelay: '20ms' }}>
           <div className="text-sm font-semibold tracking-tight text-app">
             Tarefas do Estudante
