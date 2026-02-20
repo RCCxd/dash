@@ -1,6 +1,36 @@
 {
   "tasks": [
     {
+      "id": "b3392b7c-3f8b-42bf-9c48-88619f23c458",
+      "subject": "Literatura",
+      "title": "Páginas no Livro",
+      "description": "PG. 115, 120, 121; MOD 5",
+      "dueDate": "2026-02-26",
+      "priority": "medium",
+      "createdAt": 1771545932164,
+      "updatedAt": 1771545932164
+    },
+    {
+      "id": "4932164d-b4b2-4cb8-90f8-e6dcd8890817",
+      "subject": "História",
+      "title": "Páginas no Livro",
+      "description": "PG. 652 a 655 MOD 5",
+      "dueDate": "2026-02-23",
+      "priority": "medium",
+      "createdAt": 1771545892582,
+      "updatedAt": 1771545892582
+    },
+    {
+      "id": "a79a6fa7-2126-4b61-8471-2762aafefee3",
+      "subject": "Sociologia",
+      "title": "Páginas no Livro",
+      "description": "PG. 99,104,107,108,111,112",
+      "dueDate": "2026-02-26",
+      "priority": "medium",
+      "createdAt": 1771545847934,
+      "updatedAt": 1771545847934
+    },
+    {
       "id": "a80df89a-bbd2-4ac1-b361-e00fe1069214",
       "subject": "Matemática",
       "title": "Atividades no Livro Mod 5",
