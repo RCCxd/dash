@@ -1,6 +1,66 @@
 {
   "tasks": [
     {
+      "id": "d3f8e7b9-07aa-41e2-96fc-680e112a81a1",
+      "subject": "História",
+      "title": "Atividades no Livro",
+      "description": "mod 5, pg: 679",
+      "dueDate": "2026-02-24",
+      "priority": "medium",
+      "createdAt": 1771886118975,
+      "updatedAt": 1771886118975
+    },
+    {
+      "id": "c9da6529-ab6c-4c76-8aba-b3149b37e447",
+      "subject": "Artes",
+      "title": "Atividades no Livro",
+      "description": "pratique pag 15",
+      "dueDate": "2026-02-27",
+      "priority": "medium",
+      "createdAt": 1771886085489,
+      "updatedAt": 1771886132736
+    },
+    {
+      "id": "6c6fd31a-7b51-4fb9-9a89-8fe6a6872170",
+      "subject": "Matemática",
+      "title": "Simulados No Ionica",
+      "description": "",
+      "dueDate": "2026-02-25",
+      "priority": "medium",
+      "createdAt": 1771886068663,
+      "updatedAt": 1771886068663
+    },
+    {
+      "id": "86ec194a-d63b-451e-b9cf-56de5e689b5c",
+      "subject": "Matemática",
+      "title": "Atividades no Livro",
+      "description": "mod 5, pg: 179 e 180 (itens 1 a 7)",
+      "dueDate": "2026-02-25",
+      "priority": "medium",
+      "createdAt": 1771886033897,
+      "updatedAt": 1771886033897
+    },
+    {
+      "id": "48ccebd7-ff4f-481f-8c68-45751eadf0c9",
+      "subject": "Matemática",
+      "title": "Caderno +",
+      "description": "pg 35 item 1",
+      "dueDate": "2026-02-25",
+      "priority": "medium",
+      "createdAt": 1771886000339,
+      "updatedAt": 1771886000339
+    },
+    {
+      "id": "3e4d8a81-39cb-41b5-adb2-38fe346beeb7",
+      "subject": "Matemática",
+      "title": "Atividades no Livro",
+      "description": "mod 5, pg: 146 a 149 (itens 3 a 11)",
+      "dueDate": "2026-02-25",
+      "priority": "medium",
+      "createdAt": 1771885982172,
+      "updatedAt": 1771886058557
+    },
+    {
       "id": "b3392b7c-3f8b-42bf-9c48-88619f23c458",
       "subject": "Literatura",
       "title": "Páginas no Livro",
