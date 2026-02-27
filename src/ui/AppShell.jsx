@@ -30,7 +30,7 @@ export default function AppShell({ children }) {
   const onDashboard = active === '/'
   const onStudy = active.startsWith('/estudos')
   const onRoutine = active.startsWith('/rotina')
-  const onHerberthSheets = active.startsWith('/fichas-herberth')
+  const onHerbethSheets = active.startsWith('/fichas-herbeth')
   const onSettings = active.startsWith('/configuracoes')
   const onAdmin = active.startsWith('/admin')
 
@@ -46,7 +46,7 @@ export default function AppShell({ children }) {
             <NavItem to="/" icon={LayoutDashboard} label="Tarefas" />
             <NavItem to="/estudos" icon={Timer} label="Estudos" />
             <NavItem to="/rotina" icon={CalendarCheck2} label="Rotina" />
-            <NavItem to="/fichas-herberth" icon={BookOpenCheck} label="Fichas de Herberth" />
+              <NavItem to="/fichas-herbeth" icon={BookOpenCheck} label="Fichas de Herbeth" />
             <NavItem to="/configuracoes" icon={Settings} label="Configurações" />
             {isAdmin ? <NavItem to="/admin" icon={Shield} label="Admin" /> : null}
           </nav>
@@ -88,10 +88,10 @@ export default function AppShell({ children }) {
             Rotina
           </NavLink>
           <NavLink
-            to="/fichas-herberth"
+            to="/fichas-herbeth"
             className={[
               'dash-tab flex flex-1 flex-col items-center gap-1 py-3 text-xs',
-              onHerberthSheets ? 'text-app' : 'text-muted',
+              onHerbethSheets ? 'text-app' : 'text-muted',
             ].join(' ')}
           >
             <BookOpenCheck className="h-5 w-5" />

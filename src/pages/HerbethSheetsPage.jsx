@@ -1,13 +1,14 @@
+```jsx
 import { useMemo, useState } from 'react'
 import { ExternalLink, Plus, Trash2 } from 'lucide-react'
 import { useGlobalData } from '../state/global/globalDataContext.js'
 import { newId } from '../utils/ids.js'
 
 function normalizeEnvelope(envelope) {
-  if (!envelope || typeof envelope !== 'object') return { tasks: [], herberthSheets: [] }
+  if (!envelope || typeof envelope !== 'object') return { tasks: [], herbethSheets: [] }
   const tasks = Array.isArray(envelope.tasks) ? envelope.tasks : []
-  const herberthSheets = Array.isArray(envelope.herberthSheets) ? envelope.herberthSheets : []
-  return { ...envelope, tasks, herberthSheets }
+  const herbethSheets = Array.isArray(envelope.herbethSheets) ? envelope.herbethSheets : []
+  return { ...envelope, tasks, herbethSheets }
 }
 
 function normalizeUrl(raw) {
@@ -27,16 +28,16 @@ function normalizeSheet(item) {
   }
 }
 
-export default function HerberthSheetsPage() {
+export default function HerbethSheetsPage() {
   const { tasks: globalTasks, updateGlobalTasks, isAdmin, storageConfigured } = useGlobalData()
   const envelope = useMemo(() => normalizeEnvelope(globalTasks), [globalTasks])
 
   const sheets = useMemo(() => {
-    return envelope.herberthSheets
+    return envelope.herbethSheets
       .map(normalizeSheet)
       .filter((item) => item.title && item.url)
       .sort((a, b) => b.createdAt - a.createdAt)
-  }, [envelope.herberthSheets])
+  }, [envelope.herbethSheets])
 
   const [form, setForm] = useState({
     title: '',
@@ -54,7 +55,7 @@ export default function HerberthSheetsPage() {
     setError('')
     setBusy(true)
     try {
-      const next = { ...envelope, herberthSheets: nextSheets }
+      const next = { ...envelope, herbethSheets: nextSheets }
       await updateGlobalTasks(next)
     } catch (e) {
       setError(e?.message || String(e))
@@ -92,7 +93,7 @@ export default function HerberthSheetsPage() {
   return (
     <div className="mx-auto w-full max-w-3xl px-4 pb-24 pt-4 md:pb-6 lg:max-w-none">
       <div className="dash-enter">
-        <h1 className="text-lg font-semibold tracking-tight text-app md:text-xl">Fichas de Herberth</h1>
+        <h1 className="text-lg font-semibold tracking-tight text-app md:text-xl">Fichas de Herbeth</h1>
         <p className="mt-1 text-sm text-muted">Links para PDFs resolvidos.</p>
       </div>
 
@@ -200,3 +201,5 @@ export default function HerberthSheetsPage() {
     </div>
   )
 }
+
+```

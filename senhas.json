@@ -1,0 +1,304 @@
+[
+  {
+    "id": "cliente-001",
+    "name": "Felipe",
+    "username": "Felipe",
+    "password": "felipe2309",
+    "active": true,
+    "singleUsePassword": false
+  },
+  {
+    "id": "cliente-002",
+    "name": "Benicio",
+    "username": "Benicio",
+    "password": "8w7@E8UfLnRFv$20xe-U",
+    "expiresAt": "2026-04-01T23:59:59.000Z",
+    "active": true,
+    "singleUsePassword": true
+  },
+  {
+    "id": "cliente-003",
+    "name": "Eduardo",
+    "username": "Eduardo",
+    "password": "@8XRaagY8qNw10DWDbIj",
+    "expiresAt": "2026-04-01T23:59:59.000Z",
+    "active": true,
+    "singleUsePassword": true
+  },
+  {
+    "id": "cliente-004",
+    "name": "Francine",
+    "username": "Francine",
+    "password": "HgmrEuh$mEjDj1zAlVTS",
+    "expiresAt": "2026-04-01T23:59:59.000Z",
+    "active": true,
+    "singleUsePassword": true
+  },
+  {
+    "id": "cliente-005",
+    "name": "Daniel",
+    "username": "Daniel",
+    "password": "150709",
+    "active": true,
+    "singleUsePassword": false
+  },
+  {
+    "id": "cliente-006",
+    "name": "Guilherme",
+    "username": "Guilherme",
+    "password": "tINSfSmCcMO9UyhaZ@DJ",
+    "expiresAt": "2026-04-01T23:59:59.000Z",
+    "active": true,
+    "singleUsePassword": true
+  },
+  {
+    "id": "cliente-007",
+    "name": "Aderson",
+    "username": "Aderson",
+    "password": "T#M-4JKVQHWoiOKbat6o",
+    "expiresAt": "2026-04-01T23:59:59.000Z",
+    "active": true,
+    "singleUsePassword": true
+  },
+  {
+    "id": "cliente-008",
+    "name": "William",
+    "username": "William",
+    "password": "eMi#k8QIRWS8tH@HQ@Kd",
+    "expiresAt": "2026-04-01T23:59:59.000Z",
+    "active": true,
+    "singleUsePassword": true
+  },
+  {
+    "id": "cliente-009",
+    "name": "Rafael",
+    "username": "Rafael",
+    "password": "21a@nt$5R2vUW0P7lY#J",
+    "expiresAt": "2026-04-01T23:59:59.000Z",
+    "active": true,
+    "singleUsePassword": true
+  },
+  {
+    "id": "cliente-010",
+    "name": "Marina",
+    "username": "Marina",
+    "password": "NoitesBrancas",
+    "active": true,
+    "singleUsePassword": false
+  },
+  {
+    "id": "cliente-011",
+    "name": "DEV",
+    "username": "rccxd",
+    "password": "renan2708",
+    "active": true,
+    "singleUsePassword": false
+  },
+  {
+    "id": "cliente-012",
+    "name": "Amanda",
+    "username": "Amanda",
+    "password": "8uWTW28Ln1QMQ%ntTme@",
+    "expiresAt": "2026-04-01T23:59:59.000Z",
+    "active": true,
+    "singleUsePassword": true
+  },
+  {
+    "id": "cliente-013",
+    "name": "Bernardo",
+    "username": "Bernardo",
+    "password": "osef9nB0m8$Bzoc%rT@p",
+    "expiresAt": "2026-04-01T23:59:59.000Z",
+    "active": true,
+    "singleUsePassword": true
+  },
+  {
+    "id": "cliente-014",
+    "name": "Bia",
+    "username": "Bia",
+    "password": "aaE$ep0hdKXnwxX$0G%F",
+    "expiresAt": "2026-04-01T23:59:59.000Z",
+    "active": true,
+    "singleUsePassword": true
+  },
+  {
+    "id": "cliente-015",
+    "name": "Clara",
+    "username": "Clara",
+    "password": "UfXBma%SPqo76-0mXu-g",
+    "expiresAt": "2026-04-01T23:59:59.000Z",
+    "active": true,
+    "singleUsePassword": true
+  },
+  {
+    "id": "cliente-016",
+    "name": "Aninha",
+    "username": "Aninha",
+    "password": "NSzcd6#M1CcsEzpraXxB",
+    "expiresAt": "2026-04-01T23:59:59.000Z",
+    "active": true,
+    "singleUsePassword": true
+  },
+  {
+    "id": "cliente-017",
+    "name": "Dante",
+    "username": "Dante",
+    "password": "m2z8wL8@4eETyT1q5Vev",
+    "expiresAt": "2026-04-01T23:59:59.000Z",
+    "active": true,
+    "singleUsePassword": true
+  },
+  {
+    "id": "cliente-018",
+    "name": "César",
+    "username": "Cesar",
+    "password": "7BWkkjqFDar0HOs@VHFO",
+    "expiresAt": "2026-04-01T23:59:59.000Z",
+    "active": true,
+    "singleUsePassword": true
+  },
+  {
+    "id": "cliente-019",
+    "name": "Antônio",
+    "username": "Antonio",
+    "password": "7SBfj4$ntHKcdmudiKl3",
+    "expiresAt": "2026-04-01T23:59:59.000Z",
+    "active": true,
+    "singleUsePassword": true
+  },
+  {
+    "id": "cliente-020",
+    "name": "João Pedro",
+    "username": "JoaoPedro",
+    "password": "$NWSJYuyo4BShEziDja2",
+    "expiresAt": "2026-04-01T23:59:59.000Z",
+    "active": true,
+    "singleUsePassword": true
+  },
+  {
+    "id": "cliente-021",
+    "name": "Kevin",
+    "username": "Kevin",
+    "password": "HtiXS37Z#-EI7Ura66rL",
+    "expiresAt": "2026-04-01T23:59:59.000Z",
+    "active": true,
+    "singleUsePassword": true
+  },
+  {
+    "id": "cliente-022",
+    "name": "Lais",
+    "username": "Lais",
+    "password": "J9U@Ki39p7Gp@JX%yfFZ",
+    "expiresAt": "2026-04-01T23:59:59.000Z",
+    "active": true,
+    "singleUsePassword": true
+  },
+  {
+    "id": "cliente-023",
+    "name": "Lis",
+    "username": "Lis",
+    "password": "2V7Gym5UT6NHSA-f5aXu",
+    "expiresAt": "2026-04-01T23:59:59.000Z",
+    "active": true,
+    "singleUsePassword": true
+  },
+  {
+    "id": "cliente-024",
+    "name": "Maju",
+    "username": "Maju",
+    "password": "wuSVjt8H62BCg#8AqR1y",
+    "expiresAt": "2026-04-01T23:59:59.000Z",
+    "active": true,
+    "singleUsePassword": true
+  },
+  {
+    "id": "cliente-025",
+    "name": "Mariana",
+    "username": "Mariana",
+    "password": "xl0BJ455F6@J3Wklfwwh",
+    "expiresAt": "2026-04-01T23:59:59.000Z",
+    "active": true,
+    "singleUsePassword": true
+  },
+  {
+    "id": "cliente-026",
+    "name": "Vinycius",
+    "username": "Vinycius",
+    "password": "39nbrlamFoThifRCgB#$",
+    "expiresAt": "2026-04-01T23:59:59.000Z",
+    "active": true,
+    "singleUsePassword": true
+  },
+  {
+    "id": "cliente-027",
+    "name": "Sara",
+    "username": "Sara",
+    "password": "UhuDl9#osn83j0-QBLhJ",
+    "expiresAt": "2026-04-01T23:59:59.000Z",
+    "active": true,
+    "singleUsePassword": true
+  },
+  {
+    "id": "cliente-028",
+    "name": "Sophia",
+    "username": "Sophia",
+    "password": "bP-mg#K%LAW@Uq8xEVn#",
+    "expiresAt": "2026-04-01T23:59:59.000Z",
+    "active": true,
+    "singleUsePassword": true
+  },
+  {
+    "id": "cliente-029",
+    "name": "Timóteo",
+    "username": "Timoteo",
+    "password": "A1jyyPnLK%0AMFSv@np7",
+    "expiresAt": "2026-04-01T23:59:59.000Z",
+    "active": true,
+    "singleUsePassword": true
+  },
+  {
+    "id": "cliente-030",
+    "name": "Alice",
+    "username": "Alice",
+    "password": "J-LEdL6ON20e1rRROiHk",
+    "expiresAt": "2026-04-01T23:59:59.000Z",
+    "active": true,
+    "singleUsePassword": true
+  },
+  {
+    "id": "cliente-031",
+    "name": "Garcia",
+    "username": "Garcia",
+    "password": "1ie$3CAPUBsuuyqx70AF",
+    "expiresAt": "2026-04-01T23:59:59.000Z",
+    "active": true,
+    "singleUsePassword": true
+  },
+  {
+    "id": "cliente-032",
+    "name": "Malu",
+    "username": "Malu",
+    "password": "ZwdbNjCfBUdtP#P8z0XN",
+    "expiresAt": "2026-04-01T23:59:59.000Z",
+    "active": true,
+    "singleUsePassword": true
+  },
+  {
+    "id": "cliente-033",
+    "name": "Nicole",
+    "username": "Nicole",
+    "password": "%M0U9i3pGeCSaFkQ-jat",
+    "expiresAt": "2026-04-01T23:59:59.000Z",
+    "active": true,
+    "singleUsePassword": true
+  },
+  {
+    "id": "cliente-034",
+    "name": "Herbeth",
+    "username": "Herbeth",
+    "password": "SinCosTan180",
+    "expiresAt": "2026-04-01T23:59:59.000Z",
+    "active": true,
+    "singleUsePassword": true
+  }
+]

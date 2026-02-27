@@ -4,7 +4,7 @@ import StudyHubPage from './pages/StudyHubPage.jsx'
 import RoutinePage from './pages/RoutinePage.jsx'
 import SettingsPage from './pages/SettingsPage.jsx'
 import AdminPage from './pages/AdminPage.jsx'
-import HerberthSheetsPage from './pages/HerberthSheetsPage.jsx'
+import HerbethSheetsPage from './pages/HerbethSheetsPage.jsx'
 import AppShell from './ui/AppShell.jsx'
 import { useGlobalData } from './state/global/globalDataContext.js'
 
@@ -17,7 +17,7 @@ export default function App() {
         <Route path="/" element={<DashboardPage />} />
         <Route path="/estudos" element={<StudyHubPage />} />
         <Route path="/rotina" element={<RoutinePage />} />
-        <Route path="/fichas-herberth" element={<HerberthSheetsPage />} />
+        <Route path="/fichas-herbeth" element={<HerbethSheetsPage />} />
         <Route path="/configuracoes" element={<SettingsPage />} />
         <Route
           path="/admin"
