@@ -1,6 +1,116 @@
 {
   "tasks": [
     {
+      "id": "9d2ca6cf-59c4-4a43-83d2-55e6f9cb4f60",
+      "subject": "Artes",
+      "title": "Atividades no Livro",
+      "description": "pag 19 a 26",
+      "dueDate": "2026-03-06",
+      "priority": "medium",
+      "createdAt": 1772216344640,
+      "updatedAt": 1772216344640
+    },
+    {
+      "id": "88f03b30-3037-4462-8ce3-5aa28388eb77",
+      "subject": "Matemática",
+      "title": "Caderno +",
+      "description": "Itens 3, 4, 6 a 10",
+      "dueDate": "2026-03-04",
+      "priority": "medium",
+      "createdAt": 1772216323606,
+      "updatedAt": 1772216323606
+    },
+    {
+      "id": "230b018f-8807-47d5-b3b9-221000aebce1",
+      "subject": "Matemática",
+      "title": "Aprofunde (Livro)",
+      "description": "Questões 9 a 21",
+      "dueDate": "2026-03-04",
+      "priority": "medium",
+      "createdAt": 1772216271663,
+      "updatedAt": 1772216271663
+    },
+    {
+      "id": "0f9fd785-70f6-4693-a93b-4e5f15e0d145",
+      "subject": "Matemática",
+      "title": "Atividades no Livro",
+      "description": "150, 152, 153, 155, 157, 158",
+      "dueDate": "2026-03-04",
+      "priority": "medium",
+      "createdAt": 1772216252398,
+      "updatedAt": 1772216252398
+    },
+    {
+      "id": "61872192-738d-4036-ba7f-ecf8849ffd4d",
+      "subject": "Sociologia",
+      "title": "Atividades no Livro",
+      "description": "99, 104, 107, 108, 111, 112",
+      "dueDate": "2026-03-05",
+      "priority": "medium",
+      "createdAt": 1772216204593,
+      "updatedAt": 1772216204593
+    },
+    {
+      "id": "6129e0c8-c736-4f5c-b6a2-9823af032120",
+      "subject": "Literatura",
+      "title": "Atividades no Livro",
+      "description": "128, 129, 134, 136, 137",
+      "dueDate": "2026-03-05",
+      "priority": "medium",
+      "createdAt": 1772216165402,
+      "updatedAt": 1772216165402
+    },
+    {
+      "id": "88bd71c5-56dc-4f39-88da-d212bfdd244d",
+      "subject": "Filosofia",
+      "title": "Atividades no livro",
+      "description": "Atualizar até a pag. 32",
+      "dueDate": "2026-03-05",
+      "priority": "medium",
+      "createdAt": 1772216122717,
+      "updatedAt": 1772216122717
+    },
+    {
+      "id": "af8eb7c4-bf0e-424d-b366-1ca026d2ff20",
+      "subject": "Matemática",
+      "title": "Ficha Exponencial",
+      "description": "",
+      "dueDate": "2026-03-04",
+      "priority": "medium",
+      "createdAt": 1772216072970,
+      "updatedAt": 1772216072970
+    },
+    {
+      "id": "ab802f5b-6268-4d04-b282-7b61e2d6de5a",
+      "subject": "Matemática",
+      "title": "Atividades no Livro",
+      "description": "148 e 149; 180 a 182 (8 a 14)",
+      "dueDate": "2026-02-27",
+      "priority": "medium",
+      "createdAt": 1772216041024,
+      "updatedAt": 1772216041024
+    },
+    {
+      "id": "f5fa3e14-bdcc-4ecc-8452-d71c731c24f3",
+      "subject": "Itinerário Humanas",
+      "title": "Seminario sobre seu tema",
+      "description": "",
+      "dueDate": "2026-03-10",
+      "priority": "medium",
+      "createdAt": 1772215987347,
+      "updatedAt": 1772215987347
+    },
+    {
+      "id": "1e5df02a-2b90-4a33-ac1a-4ab7c64b6d85",
+      "subject": "História",
+      "title": "Atividades no Livro",
+      "description": "682, 688 a 694",
+      "dueDate": "2026-03-02",
+      "priority": "medium",
+      "createdAt": 1772215938601,
+      "updatedAt": 1772215938601
+    },
+    {
       "id": "d3f8e7b9-07aa-41e2-96fc-680e112a81a1",
       "subject": "História",
       "title": "Atividades no Livro",
