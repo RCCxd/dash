@@ -1,4 +1,3 @@
-```jsx
 import { useMemo, useState } from 'react'
 import { ExternalLink, Plus, Trash2 } from 'lucide-react'
 import { useGlobalData } from '../state/global/globalDataContext.js'
@@ -7,7 +6,11 @@ import { newId } from '../utils/ids.js'
 function normalizeEnvelope(envelope) {
   if (!envelope || typeof envelope !== 'object') return { tasks: [], herbethSheets: [] }
   const tasks = Array.isArray(envelope.tasks) ? envelope.tasks : []
-  const herbethSheets = Array.isArray(envelope.herbethSheets) ? envelope.herbethSheets : []
+  const herbethSheets = Array.isArray(envelope.herbethSheets)
+    ? envelope.herbethSheets
+    : Array.isArray(envelope.herberthSheets)
+    ? envelope.herberthSheets
+    : []
   return { ...envelope, tasks, herbethSheets }
 }
 
@@ -33,17 +36,13 @@ export default function HerbethSheetsPage() {
   const envelope = useMemo(() => normalizeEnvelope(globalTasks), [globalTasks])
 
   const sheets = useMemo(() => {
-    return envelope.herbethSheets
+    return (envelope.herbethSheets || [])
       .map(normalizeSheet)
       .filter((item) => item.title && item.url)
       .sort((a, b) => b.createdAt - a.createdAt)
   }, [envelope.herbethSheets])
 
-  const [form, setForm] = useState({
-    title: '',
-    url: '',
-    description: '',
-  })
+  const [form, setForm] = useState({ title: '', url: '', description: '' })
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
@@ -55,7 +54,7 @@ export default function HerbethSheetsPage() {
     setError('')
     setBusy(true)
     try {
-      const next = { ...envelope, herbethSheets: nextSheets }
+      const next = { ...envelope, herbethSheets: nextSheets, herberthSheets: nextSheets }
       await updateGlobalTasks(next)
     } catch (e) {
       setError(e?.message || String(e))
@@ -101,9 +100,7 @@ export default function HerbethSheetsPage() {
         <div className="dash-card dash-enter mt-4 rounded-2xl border border-app bg-surface p-4" style={{ animationDelay: '40ms' }}>
           <div className="text-sm font-semibold text-app">Adicionar link</div>
           {!storageConfigured ? (
-            <p className="mt-1 text-xs text-muted">
-              Base global não configurada para persistência estável. O salvamento pode ser temporário.
-            </p>
+            <p className="mt-1 text-xs text-muted">Base global não configurada para persistência estável. O salvamento pode ser temporário.</p>
           ) : null}
           <form onSubmit={onAdd} className="mt-3 space-y-3">
             <label className="block">
@@ -144,9 +141,7 @@ export default function HerbethSheetsPage() {
               disabled={!isAdmin || busy}
               className={[
                 'dash-tab inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium',
-                !isAdmin || busy
-                  ? 'cursor-not-allowed bg-surface2 text-muted'
-                  : 'btn-primary',
+                !isAdmin || busy ? 'cursor-not-allowed bg-surface2 text-muted' : 'btn-primary',
               ].join(' ')}
             >
               <Plus className="h-4 w-4" />
@@ -158,9 +153,7 @@ export default function HerbethSheetsPage() {
 
       <div className="mt-4 space-y-3">
         {sheets.length === 0 ? (
-          <div className="dash-enter rounded-2xl border border-app bg-surface p-4 text-sm text-muted">
-            Nenhuma ficha cadastrada ainda.
-          </div>
+          <div className="dash-enter rounded-2xl border border-app bg-surface p-4 text-sm text-muted">Nenhuma ficha cadastrada ainda.</div>
         ) : (
           sheets.map((item, index) => (
             <div key={item.id} className="dash-card dash-enter rounded-2xl border border-app bg-surface p-4" style={{ animationDelay: `${index * 45}ms` }}>
@@ -168,12 +161,7 @@ export default function HerbethSheetsPage() {
                 <div className="min-w-0">
                   <div className="text-sm font-semibold text-app">{item.title}</div>
                   {item.description ? <div className="mt-1 text-sm text-muted">{item.description}</div> : null}
-                  <a
-                    href={item.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="dash-tab mt-2 inline-flex items-center gap-1 text-sm text-(--primary) hover:underline"
-                  >
+                  <a href={item.url} target="_blank" rel="noopener noreferrer" className="dash-tab mt-2 inline-flex items-center gap-1 text-sm text-(--primary) hover:underline">
                     Abrir PDF
                     <ExternalLink className="h-4 w-4" />
                   </a>
@@ -201,5 +189,3 @@ export default function HerbethSheetsPage() {
     </div>
   )
 }
-
-```
